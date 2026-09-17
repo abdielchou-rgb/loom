@@ -36,3 +36,6 @@ Thumbs.db
 # Project-specific temp
 *.tmp
 *.log
+
+# WorkBuddy local memory / state
+.workbuddy-ai/

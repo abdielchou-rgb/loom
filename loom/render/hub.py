@@ -282,7 +282,7 @@ def render_hub(
     # ── 命令面板行 ──
     acts: list[str] = []
     for cmd, desc, hi in _ACTIONS:
-        cls = "act" + ("" if hi else " more")
+        cls = "act" + ("" if hi else " more hide")
         acts.append(
             f"<div class='{cls}' data-c='{escape(cmd.lower())}'>"
             f"<span class='cmd'>{escape(cmd)}</span>"
@@ -342,7 +342,10 @@ def render_hub(
         "<div class='col'><div class='card pal'><h2>命令面板 ⊞</h2>"
         "<input id='q' placeholder='⌘K / Ctrl+K 搜索动作…' "
         "autocomplete='off' spellcheck='false'>"
-        "<div id='acts'>" + "".join(acts) + "</div></div>"
+        "<div id='acts'>" + "".join(acts) + "</div>"
+        "<div style='text-align:center;margin-top:7px'>"
+        "<a href='#' id='act-toggle' style='color:var(--dim);font-size:12px;text-decoration:none'>"
+        "显示全部 ↓</a></div></div>"
         "<div class='card'><h2>全部产物</h2><div class='art'>"
         + "".join(arts) + "</div></div></div>",
         "</div>",
@@ -354,15 +357,25 @@ def render_hub(
         "</div>",
         "<script>",
         "(function(){var q=document.getElementById('q');"
+        "var actsDiv=document.getElementById('acts');"
+        "var toggle=document.getElementById('act-toggle');"
         "var acts=Array.prototype.slice.call(document.querySelectorAll('#acts .act'));"
         "function f(){var t=q.value.trim().toLowerCase();"
+        "var showAll=actsDiv.classList.contains('show-all');"
         "acts.forEach(function(a){var hit=a.getAttribute('data-c').indexOf(t)>=0"
         "||a.textContent.toLowerCase().indexOf(t)>=0;"
-        "a.classList.toggle('hide',!hit);});}"
+        "var isMore=a.classList.contains('more');"
+        "var shouldHide=!hit||(!showAll&&t===''&&isMore);"
+        "a.classList.toggle('hide',shouldHide);});}"
         "q.addEventListener('input',f);"
         "document.addEventListener('keydown',function(e){"
         "if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){"
-        "e.preventDefault();q.focus();q.select();}});})();",
+        "e.preventDefault();q.focus();q.select();}});"
+        "if(toggle){toggle.addEventListener('click',function(e){"
+        "e.preventDefault();actsDiv.classList.toggle('show-all');"
+        "toggle.textContent=actsDiv.classList.contains('show-all')?'收起 ↑':'显示全部 ↓';"
+        "f();});}"
+        "f();})();",
         "</script>",
         "</body></html>",
     ]
