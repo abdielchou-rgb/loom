@@ -75,6 +75,7 @@ from ..validators.structure import _commitment_evident
 from .budget import Budget, BudgetExceeded, Usage, check, render as render_budget
 from .checkpoint import RunState, save as save_checkpoint, resume as resume_checkpoint
 from .engines import Scripter
+from .memory import NarrativeMemory
 from .orchestrator import LoomPipeline
 from .preflight import PreflightError, preflight
 
@@ -396,6 +397,15 @@ class AutoWriter:
         for c in ir.commitment.commitments:
             c.satisfied = False
 
+        # P1 动态叙事记忆：从 IR 恢复（续跑）或新建。
+        # 记忆与 lore 的边界：lore = 世界知识（常驻/触发），
+        # memory = 叙事状态（随场推进）。两者不合并。
+        memory = (
+            NarrativeMemory.from_json(ir.memory_json)
+            if ir.memory_json
+            else NarrativeMemory()
+        )
+
         # 2. 起飞前体检：**自主性会放大计划的质量**，计划不合格不许上路。
         pf = preflight(ir)
         if not pf.ok:
@@ -501,6 +511,14 @@ class AutoWriter:
                 prev_tail = s.prose
                 self._step(f"正文：{s.title}（{len(s.prose)} 字）")
 
+            # P1 动态叙事记忆：每写完一场就把 state_deltas 提交进记忆，
+            # 后续场只注入**与当前相关**的记忆（沿用 Scripter「只注入相关
+            # lore，绝不注入全文」的既有纪律）。记忆进 IR，可持久化、可重跑。
+            for s in ir.ordered_scenes():
+                if s.prose and s.state_deltas:
+                    memory.commit(s)
+            ir.memory_json = memory.to_json()
+
             # 重新评估承诺兑现状态（P0.5：从假门禁改为可解释匹配）
             self._refresh_commitments(ir)
 
@@ -570,6 +588,13 @@ class AutoWriter:
                 )
                 or "（这是第一场）",
                 "open_commitments": opens,
+                # P1：只注入**与当前相关**的记忆，绝不注入全文
+                # （沿用 Scripter 对 lore 的既有纪律）。
+                "memory": (
+                    memory.brief_for(ir.ordered_scenes()[-1])
+                    if ir.ordered_scenes()
+                    else ""
+                ),
                 "characters": "、".join(names.values()) or "、".join(ids),
                 "character_ids": ids,
                 "character_names": names,

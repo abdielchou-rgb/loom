@@ -785,6 +785,16 @@ class NarrativeIR(LoomModel):
     qualities: dict[str, Any] = Field(default_factory=dict)
     provenance: list[Provenance] = Field(default_factory=list)
 
+    # --- P1 动态叙事记忆（序列化形态）---
+    # 记忆必须进 IR（可持久化、可重跑），否则又是一份内存态，与「IR 是
+    # 产品本体」冲突。这里存**序列化后的 JSON 字符串**而不是对象本身：
+    # `NarrativeMemory` 住在 `loom/pipeline/memory.py`，而本模块被它依赖，
+    # 直接引用会造成 ir ↔ pipeline 的循环导入。
+    memory_json: str | None = Field(
+        default=None,
+        description="动态叙事记忆的序列化快照（NarrativeMemory.to_json()）。",
+    )
+
     # --- ② ToM：客观真值层 + 张力资产 ---
     objective_truth: dict[str, Any] = Field(
         default_factory=dict,

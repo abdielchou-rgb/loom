@@ -23,6 +23,8 @@
 
 from __future__ import annotations
 
+import time
+
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -84,6 +86,7 @@ from ..ir.tom import (
 from ..llm.base import Generator
 from ..provenance.awareness import awareness_block
 from ..validators import available, run_all
+from .repair import RepairBudget, detect_conflicts, mark_conflicted
 
 # ---------------------------------------------------------------------------
 # Stage 1：内核层
@@ -1081,9 +1084,30 @@ class CriticLoop:
     """是否把结构类问题转成 Diff 提案。关掉它只影响「有没有提案」，
     不影响体检结论 —— 提案是附加产物，不是体检的一部分。"""
 
+    budget: RepairBudget | None = None
+    """修复预算（P3）。None 时按 max_rounds 派生一份。
+
+    为什么必须有：ConWriter（EMNLP 2026）在 GPT-5 / 6K–12K 上因
+    「修复遵从 vs 长度控制」互锁而**不收敛** —— 验证器与生成器会互相
+    牵着对方跑，不设预算就会在「修不完的修复循环」里烧完 token。
+    触顶必须**停止并报告**，不能静默继续。
+    """
+
     def run(self, ir: NarrativeIR) -> tuple[NarrativeIR, list[str]]:
         log: list[str] = []
+        budget = self.budget or RepairBudget(
+            max_rounds=self.max_rounds, started_at=time.time()
+        )
         for rnd in range(1, self.max_rounds + 1):
+            # 预算闸：每一轮开始前查。触顶即停，并把代价写进日志。
+            if budget.exhausted(now=time.time()):
+                log.append(
+                    f"第 {rnd} 轮未开始：修复预算已触顶"
+                    f"（{budget.render(now=time.time())}）——"
+                    "停止并报告，不静默继续"
+                )
+                break
+            budget.rounds = rnd
             report = run_all(ir)
             issues = report.errors + report.warnings
 
@@ -1134,6 +1158,13 @@ class CriticLoop:
                 )
                 new_prose = str(out.get("prose", "")).strip()
                 if new_prose and new_prose != scene.prose:
+                    # 记账：同一个 (卡, 字段) 只计一次；超 max_field_edits 即停。
+                    if not budget.note_edit(sid, "prose"):
+                        log.append(
+                            f"    {sid} 未修订：字段编辑预算已触顶"
+                            f"（{budget.render(now=time.time())}）"
+                        )
+                        continue
                     scene.prose = new_prose
                     log.append(f"    {sid} 已修订（去 AI 味 {rep.score} → "
                                f"{scan_slop(new_prose, sid).score}）")
@@ -1143,6 +1174,17 @@ class CriticLoop:
         # 而不是某一轮中途的状态，否则作者看到的 before 已经过期了。
         if self.propose:
             proposals = Proposer().run(ir, final)
+            # 冲突消解（P3）：同一 (卡, 字段) 被两条互斥建议同时改 →
+            # 记为 conflicted 交人裁决，而不是让机器二选一。
+            # 复用已有的 DiffStatus.CONFLICTED 语义，不新造概念。
+            conflicts = detect_conflicts(proposals)
+            if conflicts:
+                mark_conflicted(proposals, conflicts=conflicts)
+                log.append(
+                    f"⚠ {len(conflicts)} 组互斥建议已标记为 conflicted"
+                    "（交作者裁决，机器不替人二选一）："
+                )
+                log.extend("    " + c.render() for c in conflicts[:5])
             if proposals:
                 log.append(
                     f"结构提案 {len(proposals)} 条（待作者裁决，**不自动应用**）"
