@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+
+# Build / dist
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Outputs & artifacts
+out/
+*.pyz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (if any)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific temp
+*.tmp
+*.log
