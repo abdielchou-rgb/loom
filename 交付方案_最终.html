@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>龙骨 Keel · 最终交付方案</title>
+<style>
+:root { --ink:#1a1a1a; --dim:#5c6370; --line:#e3e6ea; --bg:#ffffff;
+        --panel:#f7f8fa; --accent:#1f6feb; --warn:#b45309; }
+* { box-sizing: border-box; }
+body { margin:0; padding:48px 24px 96px; background:var(--bg); color:var(--ink);
+       font:16px/1.75 -apple-system,"Segoe UI","Microsoft YaHei",system-ui,sans-serif; }
+main { max-width: 860px; margin: 0 auto; }
+h1,h2,h3,h4 { line-height:1.3; font-weight:650; margin:2em 0 .6em; }
+h1 { font-size:1.9em; margin-top:0; padding-bottom:.4em; border-bottom:2px solid var(--line); }
+h2 { font-size:1.35em; padding-bottom:.3em; border-bottom:1px solid var(--line); }
+h3 { font-size:1.12em; }
+h4 { font-size:1em; color:var(--dim); }
+p { margin: .8em 0; }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+code { background:var(--panel); border:1px solid var(--line); border-radius:4px;
+       padding:.1em .35em; font-size:.88em;
+       font-family:"Cascadia Mono",Consolas,"Courier New",monospace; }
+pre { background:var(--panel); border:1px solid var(--line); border-radius:8px;
+      padding:14px 16px; overflow-x:auto; }
+pre code { background:none; border:none; padding:0; font-size:.86em; line-height:1.6; }
+blockquote { margin:1.1em 0; padding:.5em 0 .5em 16px; border-left:3px solid var(--accent);
+             background:var(--panel); color:#333; border-radius:0 6px 6px 0; }
+blockquote p { margin:.35em 0; }
+table { border-collapse:collapse; width:100%; margin:1.2em 0; font-size:.94em; }
+th,td { border:1px solid var(--line); padding:8px 12px; text-align:left; vertical-align:top; }
+th { background:var(--panel); font-weight:650; }
+tr:nth-child(even) td { background:#fbfcfd; }
+ul,ol { padding-left:1.5em; margin:.8em 0; }
+li { margin:.3em 0; }
+hr { border:none; border-top:1px solid var(--line); margin:2.4em 0; }
+footer { max-width:860px; margin:64px auto 0; padding-top:16px; border-top:1px solid var(--line);
+         color:var(--dim); font-size:.85em; }
+</style>
+</head>
+<body>
+<main>
+<h1>龙骨 Keel · 最终交付方案</h1>
+<blockquote><p>日期：2026-09-19 ｜ 版本 1.0.0 ｜ 远端 https://github.com/abdielchou-rgb/keel<br><strong>证据分级贯穿全文</strong>：<code>实测</code> = 本机跑出来的数字；<code>推断</code> = 有依据但没直接测；<br><code>未验证</code> = 没测过，只是合理猜测。三者混在一起，方案就变成了装饰。<br><strong>本文所有计数都是从代码现取的</strong>（<code>registry_stats()</code> / <code>pkgutil</code> / <code>len(METHODS)</code>），<br>不是手抄的。这个项目的漂移检查器已经抓过两次手写数字漂移，所以这里不手写。</p></blockquote>
+<hr>
+<h2>0. 一句话</h2>
+<blockquote><p><strong>龙骨 Keel 1.0 = 剧本 / 微短剧的「结构体检 + 合规自检」工具。</strong><br>形态：一条命令 → <strong>0.5 秒</strong>（<code>实测</code>）→ 一份自包含、断网可开、能直接发给别人的 HTML 报告。</p></blockquote>
+<p>它<strong>不替你写</strong>，也不夸你写得好。它用结构化证据指出你的故事哪里站不住、<br>用留痕保护你的权益，把每一个「改不改、怎么改」的决定交还给你。</p>
+<p>卖点不是「写得更快」——那是加剧那 98.7%。是<strong>避免浪费</strong>：<br>在投入制作之前就知道这部结构上有问题。</p>
+<hr>
+<h2>1. 名字：龙骨 / Keel</h2>
+<h3>为什么换掉 Loom（<code>实测</code>，2026-09-19 查过）</h3>
+<table><thead><tr><th>名字</th><th>判定</th><th>证据</th></tr></thead><tbody><tr><td><strong>Loom</strong></td><td>❌ 不可用</td><td>已被 <strong>Atlassian 收购</strong>（2023-11 交割）；开发圈里 "Loom" 还指 <strong>Java Project Loom</strong>（虚拟线程）</td></tr><tr><td><strong>Fabula</strong></td><td>❌ 更糟</td><td>同赛道直接占用：<code>fabula.productions</code> 做「剧本→知识图谱」，<code>fabulaos.io</code> 自称 "AI-native OS for story development"</td></tr><tr><td><strong>Textus</strong></td><td>❌ 撞音</td><td>与 <code>TextUs</code>（短信营销软件）读音完全相同</td></tr></tbody></table>
+<p><strong>Fabula 本来是最自然的选择</strong> —— fabula / syuzhet 是叙事学里 IR 与文本的原始对立，<br>正是本项目「IR 是本体、文本只是视图」的术语来源。但<strong>越是精确的名字越可能已经被占</strong>：<br>正因为贴切，同赛道已经挤满了。</p>
+<h3>为什么是龙骨</h3>
+<p>吊顶与船体里那层<strong>看不见却承重</strong>的结构。正对应本项目的立场：<br>决定一部作品站不站得住的，是<strong>正文之下那层结构</strong>。</p>
+<ul><li>中文母语可读、好记、未被同赛道占用</li><li>英文 <strong>Keel</strong> 是同一件事的另一个说法：先定龙骨，再定船</li><li>改名已完成（包名 / CLI / 仓库 / 全部文档），见 <code>CHANGELOG.md</code></li></ul>
+<blockquote><p><code>未验证</code>：<strong>没有做商标检索</strong>。上述只是「软件领域重名调研」，<br>不等于法律上的可用性判断。真要对公众发布前，这一步必须补。</p></blockquote>
+<hr>
+<h2>2. 交付什么</h2>
+<table><thead><tr><th>#</th><th>交付物</th><th>形态</th><th>状态</th></tr></thead><tbody><tr><td>1</td><td><strong>可安装的 Python 包</strong></td><td><code>pip install keel-narrative</code> → 得到 <code>keel</code> 命令</td><td><code>实测</code> 可装</td></tr><tr><td>2</td><td><strong>44 个校验器</strong>（35 门禁 + 9 报表项）</td><td>每条带理论出处 + 反例 fixture</td><td><code>实测</code></td></tr><tr><td>3</td><td><strong>6 个渲染器</strong></td><td>text / fountain / storyboard / ink / renpy / html</td><td><code>实测</code></td></tr><tr><td>4</td><td><strong>13 个结构模板</strong></td><td>好莱坞 beat sheet、起承转合、Reagan 六弧线<strong>平级共存</strong></td><td><code>实测</code></td></tr><tr><td>5</td><td><strong>7 个 API 方法</strong></td><td><code>keel api</code> 稳定 JSON 出口（插件契约）</td><td><code>实测</code></td></tr><tr><td>6</td><td><strong>自证工具</strong></td><td><code>scripts/verify.py</code>：零依赖、不需要 key</td><td><code>实测</code> 87·0</td></tr><tr><td>7</td><td><strong>零配置启动器</strong></td><td><code>scripts/keel.bat</code>（Windows）/ <code>keel.sh</code></td><td><code>实测</code></td></tr><tr><td>8</td><td><strong>单文件包</strong></td><td><code>keel.pyz</code>，不用装 Python 包也能跑</td><td><code>实测</code></td></tr></tbody></table>
+<h3>三条差异化（每条都有外部证据，不是自夸）</h3>
+<table><thead><tr><th>差异化</th><th>外部证据</th><th>Keel 的实现</th></tr></thead><tbody><tr><td><strong>承诺可校验</strong></td><td>NCP-Bench（ICML 2026）：最强模型 GPT-5.2 在 20 轮后<strong>存活率仅 42%</strong>，事实冲突率 40–68%</td><td>L3 承诺层是 IR 一等公民，因此<strong>可验算</strong>，不靠提示词祈祷</td></tr><tr><td><strong>前提不漂移</strong></td><td>PLOTTER（ACL 2026）：图规划四维度胜率 72–100%，<strong>唯独前提忠实度 40%/14%/44%</strong></td><td><code>premise_fidelity</code> 校验器</td></tr><tr><td><strong>觉察可见</strong></td><td>CHI 2026 <em>Reactive Writing</em>（19 人访谈 + 1,291 次会话）：作者<strong>察觉不到</strong> AI 的影响，却感觉完全掌控</td><td>写作时回显「已做判断 N 次（采纳 X / 驳回 Y）」</td></tr></tbody></table>
+<hr>
+<h2>3. 现状盘点（<code>实测</code> 2026-09-19）</h2>
+<pre><code>版本              1.0.0
+校验器            44   （35 门禁 + 9 报表项）
+咨询项 ADVISORY    9
+结构模板          13
+渲染器             6
+模块              75
+API 方法           7   （api_version = 1）
+测试文件          35   →  35 / 35 全绿
+门禁自证          87 · 0 失败</code></pre>
+<h3>P0–P6 真实状态（逐项对着代码核过，不并入「已完成」）</h3>
+<table><thead><tr><th>阶段</th><th>状态</th><th>落地物</th></tr></thead><tbody><tr><td>P0 可达性</td><td>✅</td><td><code>keel.bat</code> / <code>keel.sh</code> / <code>build_zipapp.py</code> / <code>check_launch.py</code></td></tr><tr><td>P0.5 假门禁</td><td>⚠️ <strong>完成但方案被推翻</strong></td><td><code>commitment_satisfied</code> 改为结构判据（原词法匹配实测在中文上恒假，已撤回）</td></tr><tr><td>P1 动态叙事记忆</td><td>✅</td><td><code>pipeline/memory.py</code> 接入 <code>AutoWriter</code></td></tr><tr><td>P2 显式状态转移语义</td><td>✅</td><td><code>validators/transitions.py</code> + 反例 fixture</td></tr><tr><td>P3 修复收敛保障</td><td>✅</td><td><code>RepairBudget</code> 四轴接入 <code>CriticLoop</code></td></tr><tr><td>P4 校验器自检</td><td>✅</td><td>35 个门禁各有 1 正例 + 1 负例，<code>verify.py</code> §10 出 precision/recall</td></tr><tr><td>P5 商业化工程</td><td>🟡 <strong>3/4 → 3.5/4</strong></td><td>报告导出 / 证据包 / 备案材料 ✅；<strong>插件契约层已交付，薄客户端本体未做</strong></td></tr><tr><td>P6 2.0 互动叙事</td><td>🟡 部分</td><td>分支一致性校验 ✅；<strong>存档与 IR 版本绑定未做</strong></td></tr></tbody></table>
+<h3>一条必须说清的负面结论</h3>
+<p><strong>主题兑现不可机判。</strong> 曾用「承诺措辞 vs 场景文本的词法匹配」当代理，<br>实测在中文上<strong>恒假</strong>（7 条承诺 7/7 误报，健康分 92 → 21）。<br>退一步用字符二元组也不行：实测重叠率只有 0.05–0.10，<strong>没有任何阈值</strong>能把<br>「兑现了」与「没兑现」分开 —— 因为承诺措辞与场景措辞是<strong>两套独立生成的词表</strong>。</p>
+<p>L3 真正的可测执行力在 <code>drift.drift_guard</code>（测「尾窗还在不在论点上」）。<br>这条写下来是为了防止有人再把那个假判据装回去。</p>
+<hr>
+<h2>4. 第一分钟路径（<code>实测</code>）</h2>
+<pre><code>$ keel write "一个外科医生发现自己缝合的每一针都在改写病人的记忆" --out out/_firstrun
+
+real    0m0.504s          ← 离线参考生成器，不需要 API key
+已写入 out/_firstrun/：ir.json · novel.md · outline.md · audience.json ·
+                      report.html · glance.html · c2pa.json · keel.html</code></pre>
+<p>产物自包含性（交付主张的核心，逐项验过）：</p>
+<table><thead><tr><th>产物</th><th>体积</th><th>外链</th><th><code>&lt;script&gt;</code></th><th>断网可开</th></tr></thead><tbody><tr><td><code>report.html</code></td><td>12,804 B</td><td><strong>0</strong></td><td><strong>0</strong></td><td>✅</td></tr><tr><td><code>glance.html</code></td><td>4,711 B</td><td><strong>0</strong></td><td><strong>0</strong></td><td>✅</td></tr><tr><td><code>keel.html</code>（枢纽）</td><td>13,564 B</td><td><strong>0</strong></td><td>1（内联，无网络请求）</td><td>✅</td></tr></tbody></table>
+<p><strong>为什么这件事重要</strong>：报告一旦依赖服务端签名，就变成「信不信我们」。<br>离线可验 = 谁都能复算，这才是可验证的本义。</p>
+<hr>
+<h2>5. 交付物清单</h2>
+<pre><code>keel/                    75 个模块（三层 IR / 校验器 / 渲染器 / 流水线 / 溯源）
+tests/                   35 个零依赖自运行测试 + fixtures + 门禁自检样本集
+scripts/                 verify.py（自证）· demo.py · pipeline_demo.py
+                         check_launch.py · build_zipapp.py · keel.bat · keel.sh
+examples/                可运行的示例
+keel.pyz                 单文件可执行包
+pyproject.toml           打包元数据（packages.find 派生，不手抄）
+LICENSE                  MIT
+README.md / README_EN.md 中英双版
+QUICKSTART.md            5 分钟上手（文中每条命令均实跑过）
+CHANGELOG.md             版本记录
+ENGINEERING_PLAN.md      工程计划
+交付方案_最终.md          本文
++ 6 份设计与调研文档      产品战略 / 第一性原理 / 理论覆盖清单 / 外部调研 ×2 /
+                         剧本系统设计评审 / 成为全球顶级项目的路径</code></pre>
+<hr>
+<h2>6. 还差什么</h2>
+<table><thead><tr><th>#</th><th>缺口</th><th>级别</th><th>实测依据</th><th>补法</th></tr></thead><tbody><tr><td><strong>G1</strong></td><td><strong>P5 薄客户端本体</strong>（VS Code / Cursor / Obsidian）</td><td>🟠 高</td><td>契约层（<code>keel/api.py</code> + <code>keel api</code>）已交付并测过 7 条错误路径；<strong>插件本体未做</strong></td><td>按契约写薄客户端；反漂移测试断言「插件声明的方法 ⊆ 引擎方法」</td></tr><tr><td><strong>G2</strong></td><td><strong>P6 存档与 IR 版本绑定</strong></td><td>🟡 中</td><td><code>checkpoint.py</code> 只做检查点，未把存档绑到 IR 版本</td><td>存档里记 IR 版本指纹，载入时校验</td></tr><tr><td><strong>G3</strong></td><td><strong>真 LLM 端到端验证</strong></td><td>🟠 高</td><td>全部验收都走离线参考生成器</td><td>需要 API key。<strong>这是唯一能证明生成质量的路</strong></td></tr><tr><td><strong>G4</strong></td><td><code>max_rounds</code> 的质量测量</td><td>🟡 中</td><td>只覆盖了<strong>循环机制</strong>（收敛性），<strong>不覆盖生成质量</strong></td><td>同 G3，需真 LLM</td></tr><tr><td><strong>G5</strong></td><td>打包元数据 <code>authors</code> 字段是 <code>Keel</code></td><td>🟢 低</td><td>作者应是<strong>人</strong>，不是产品名</td><td>填真实署名</td></tr><tr><td><strong>G6</strong></td><td>商标检索未做</td><td>🟠 高（发布前）</td><td>§1 只做了软件重名调研</td><td>正式发布前补</td></tr></tbody></table>
+<h3>一个安装上的真实坑（<code>实测</code> 踩到）</h3>
+<p><strong>Python 3.13 新建的 venv 不含 <code>setuptools</code></strong>，因此 <code>pip install -e .</code><br>在<strong>离线环境</strong>下会以 <code>BackendUnavailable: Cannot import 'setuptools.build_meta'</code> 失败。<br>两条解法：</p>
+<pre><code class="lang-bash"># 有网：让 pip 自己拉构建依赖（默认行为，什么都不用改）
+pip install -e .
+
+# 离线：先装 setuptools，再跳过构建隔离
+pip install setuptools wheel &amp;&amp; pip install -e . --no-build-isolation</code></pre>
+<blockquote><p>这条写进交付方案，是因为<strong>文档里写错的安装命令比没有文档更贵</strong> ——<br>用户按它做、做不通、就走了。</p></blockquote>
+<hr>
+<h2>7. 验收标准</h2>
+<table><thead><tr><th>判据</th><th>阈值</th><th>当前</th></tr></thead><tbody><tr><td><code>scripts/verify.py</code></td><td>失败 0</td><td>✅ <strong>87 · 0</strong></td></tr><tr><td>全部测试文件</td><td>全绿</td><td>✅ <strong>35 / 35</strong></td></tr><tr><td>两个端到端 demo</td><td>exit 0</td><td>✅</td></tr><tr><td><code>check_launch.py</code></td><td>ALL PASS（无裸 traceback）</td><td>✅</td></tr><tr><td><code>keel.pyz</code></td><td>可独立运行</td><td>✅ <code>keel 1.0.0</code></td></tr><tr><td><code>report.html</code></td><td>0 外链 / 0 脚本</td><td>✅</td></tr><tr><td>全新目录安装后跑通</td><td>不依赖当前工作区</td><td>✅（本次在 <code>D:\Claude\projects\keel</code> 重装重跑）</td></tr><tr><td>无 API key 端到端</td><td>必须跑通</td><td>✅（项目铁律 6）</td></tr></tbody></table>
+<p><strong>「干净基线全绿」不等于「所有分支都跑过」</strong> —— 所以每条门禁还要求一个反例<br>fixture，判据是<strong>严重度升级</strong>（变异后严重度 &gt; 基线严重度），不是「变异后触发了」。</p>
+<hr>
+<h2>8. 不做什么（四条红线 + 三条防过度工程）</h2>
+<table><thead><tr><th>不做</th><th>为什么</th></tr></thead><tbody><tr><td><strong>不做网文代笔</strong></td><td>起点/番茄/晋江一致禁止 AI 直出正文。<strong>同一套 Keel：做网文是违规工具，做剧本是合规工具。</strong> 已实现为 <code>policy.py</code> 闸门</td></tr><tr><td><strong>不预测爆款</strong></td><td>LLM 评委与人类判断<strong>反相关</strong>（会把零样本 AI 故事排在《纽约客》之上）。只做<strong>结构性淘汰</strong></td></tr><tr><td><strong>不做反检测</strong></td><td>技术上徒劳、伦理上站不住、商业上致命。机检红线见 <code>tests/test_redlines.py</code></td></tr><tr><td><strong>不自动改结构</strong></td><td>只自动修<strong>文风</strong>；结构类出提案等人裁决。理由一：保护作者意图。理由二（PLOTTER 实测）：图规划路线在前提忠实度上只有 <strong>40%</strong></td></tr></tbody></table>
+<table><thead><tr><th>暂不做</th><th>为什么</th></tr></thead><tbody><tr><td>Web UI / SaaS</td><td>部署 + 鉴权 + 成本，与当前规模不匹配的大跃迁</td></tr><tr><td>账号 / 计费</td><td>同上。且定价<strong>不该按生成量</strong>（那等于激励生产更多失败品）</td></tr><tr><td>更多校验器</td><td>35 个门禁已足够。瓶颈是<strong>能不能被看见</strong>，不是检查数量</td></tr></tbody></table>
+<hr>
+<h2>9. 风险与未闭合项</h2>
+<h3>🔴 未闭合：公开仓库的历史泄露（需你决定）</h3>
+<p><strong>事实（<code>实测</code>）</strong>：旧仓库名 <code>loom</code> 的<strong>初始提交 <code>48cab2af0ccf…</code></strong> 里，<br>误提交了 5 份内部记忆文件（约 185 KB 的项目策略/合规/竞品笔记）。</p>
+<p><strong>已做的处置</strong>：</p>
+<ul><li>用 <code>git filter-branch</code> 重写全部历史，<code>.workbuddy-ai/**</code> 从所有分支清除</li><li>本地对象库 <code>gc --prune=now</code>，旧提交<strong>已不可读</strong></li><li>force-push，远端 4 个提交全部干净</li></ul>
+<p><strong>但仍然没关掉的</strong>：旧提交与其 5 个 blob 在 GitHub 上<strong>仍可经 SHA 取回</strong><br>（<code>git fetch origin &lt;sha&gt;</code> 成功；API 仍返回 41779 字节）。<br><strong>GitHub 只在自家 gc 时丢弃不可达对象，用户无法触发。</strong></p>
+<blockquote><p><strong>「历史已重写」不等于「内容已消失」。</strong> 前者是「没人能顺着分支找到」，<br>后者是「谁都拿不回来」。记录过 SHA 的人仍能原样取回。</p></blockquote>
+<p><strong>两条出路</strong>：① 删库重建（彻底，但当前 token 无 <code>delete_repo</code> scope）；<br>② 找 GitHub Support 跑一次 gc（保留仓库，耗时不定）。</p>
+<p><strong>缓解事实</strong>：仓库创建于 2026-09-19T09:40Z，<strong>0 fork / 0 star / 0 watcher</strong>，<br>暴露窗口约 1 小时；且已扫 <code>sk-</code> / <code>gho_</code> / <code>ghp_</code> / <code>AKIA</code> / <code>PRIVATE KEY</code>，<strong>零命中</strong> ——<br><strong>没有凭据泄露</strong>，风险落在「内部笔记被读过」，不是「密钥失窃」。</p>
+<h3>🟠 其他</h3>
+<table><thead><tr><th>风险</th><th>说明</th></tr></thead><tbody><tr><td>生成质量未经真 LLM 验证</td><td>全部验收走离线参考生成器。<strong>形态对、内容假</strong>。G3 未做之前，不要对外宣称生成质量</td></tr><tr><td>备案材料涉及法规解释</td><td>已按「<strong>只做清单不做保证</strong>」实现，并附「以主管部门口径为准」</td></tr><tr><td>名字未经商标检索</td><td>见 §1</td></tr></tbody></table>
+<hr>
+<h2>10. 交付之后</h2>
+<ol><li><strong>补 G1</strong>：按 <code>keel api</code> 契约写 VS Code / Cursor / Obsidian 薄客户端</li><li><strong>补 G3</strong>：接真 LLM 做端到端验证 —— 这是唯一能证明生成质量的路</li><li><strong>关掉 §9 的泄露</strong>：删库重建 或 GitHub Support</li><li><strong>发布前</strong>：商标检索 + <code>authors</code> 填真实署名</li></ol>
+<hr>
+<h2>附录：数字从哪来（可复算）</h2>
+<pre><code class="lang-bash">cd D:/Claude/projects/keel
+.venv/Scripts/python.exe scripts/verify.py                 # 87 · 0
+for f in tests/test_*.py; do .venv/Scripts/python.exe "$f"; done   # 34/34
+.venv/Scripts/python.exe -c "from keel.validators import registry_stats as s; print(s())"
+.venv/Scripts/python.exe -c "from keel import api; print(api.API_VERSION, len(api.METHODS))"</code></pre>
+<p><strong>任何一条对不上，这份方案就是错的</strong> —— 请按上面重跑，不要相信本文的数字。</p>
+</main>
+<footer>由 scripts/render_doc.py 从 Markdown 渲染 · 自包含（零外链、零外部脚本）· 断网可开</footer>
+</body>
+</html>
