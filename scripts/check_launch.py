@@ -4,14 +4,14 @@
     .venv/Scripts/python.exe scripts/check_launch.py
 
 This is OUR validation, NOT scripts/verify.py (owned by another agent).
-It guards the P-21 regression: `python -m loom` must never dump a raw
+It guards the P-21 regression: `python -m keel` must never dump a raw
 traceback. It simulates a headless / double-click run of the CLI via
 subprocess and asserts:
 
-  (a) `python -m loom --help`        -> exit 0, stdout has "usage"/"loom",
+  (a) `python -m keel --help`        -> exit 0, stdout has "usage"/"keel",
                                         NO "Traceback".
-  (b) `python -m loom` (stdin off)   -> exit code 2, NO "Traceback".
-  (c) `python -m loom audit x.json`  -> non-zero OR friendly, NO "Traceback",
+  (b) `python -m keel` (stdin off)   -> exit code 2, NO "Traceback".
+  (c) `python -m keel audit x.json`  -> non-zero OR friendly, NO "Traceback",
                                         stdout/stderr has "找不到" or "IR".
 
 A clear PASS/FAIL summary is printed per check.
@@ -29,7 +29,7 @@ PY = sys.executable  # run with the same (venv) interpreter that launched us
 
 def run(args, **kw):
     return subprocess.run(
-        [PY, "-m", "loom", *args],
+        [PY, "-m", "keel", *args],
         cwd=str(ROOT),
         capture_output=True,
         text=True,
@@ -53,11 +53,11 @@ def main() -> int:
     out = (r.stdout or "") + (r.stderr or "")
     c = (
         r.returncode == 0
-        and ("usage" in out.lower() or "loom" in out.lower())
+        and ("usage" in out.lower() or "keel" in out.lower())
         and "Traceback" not in out
     )
     ok &= check(
-        "(a) python -m loom --help -> exit 0, has usage/loom, no Traceback",
+        "(a) python -m keel --help -> exit 0, has usage/keel, no Traceback",
         c,
         f"rc={r.returncode} traceback={'Traceback' in out}",
     )
@@ -67,7 +67,7 @@ def main() -> int:
     out = (r.stdout or "") + (r.stderr or "")
     c = r.returncode == 2 and "Traceback" not in out
     ok &= check(
-        "(b) python -m loom (stdin closed) -> exit 2, no Traceback",
+        "(b) python -m keel (stdin closed) -> exit 2, no Traceback",
         c,
         f"rc={r.returncode} traceback={'Traceback' in out}",
     )
@@ -81,7 +81,7 @@ def main() -> int:
         and ("找不到" in out or "IR" in out)
     )
     ok &= check(
-        "(c) python -m loom audit no_such_file.json -> friendly, no Traceback, 找不到/IR",
+        "(c) python -m keel audit no_such_file.json -> friendly, no Traceback, 找不到/IR",
         c,
         f"rc={r.returncode} traceback={'Traceback' in out}",
     )

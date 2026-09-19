@@ -9,13 +9,13 @@
 ── 本文件要钉死的三件事 ─────────────────────────────────
 
 1. **「待人工确认」必须存在，且不算阻塞也不算通过。**
-   把它并进「通过」= 宣称 Loom 全查过了；并进「阻塞」= 这个命令
-   永远没人能用（任何稿子都有平台侧 Loom 看不到的信息）。
+   把它并进「通过」= 宣称 Keel 全查过了；并进「阻塞」= 这个命令
+   永远没人能用（任何稿子都有平台侧 Keel 看不到的信息）。
    单列一态是唯一诚实的做法。
 
 2. **维度对照表的覆盖状态是派生的。**
    手写「✅/❌」必然漂移。第一版只认 registry，结果 `dress` / `anti_slop`
-   明明存在却显示「Loom 不做」—— **派生口径取错比手写更容易骗人**，
+   明明存在却显示「Keel 不做」—— **派生口径取错比手写更容易骗人**，
    因为它看起来是算出来的。故断言「覆盖数 == 实际能力数」。
 
 3. **内容编号由内容派生，不是时间戳。**
@@ -59,7 +59,7 @@ class T:
 
 
 def _human_ir():
-    from loom.ir.models import Medium
+    from keel.ir.models import Medium
     from tests.fixtures import clean_copy
 
     ir = clean_copy(Medium.NOVEL)  # 基线已把 origin 全设为 HUMAN
@@ -67,8 +67,8 @@ def _human_ir():
 
 
 def _ai_ir():
-    from loom.ir.enums import ChunkOrigin
-    from loom.ir.models import Medium
+    from keel.ir.enums import ChunkOrigin
+    from keel.ir.models import Medium
     from tests.fixtures import clean_copy
 
     ir = clean_copy(Medium.NOVEL)
@@ -90,7 +90,7 @@ def _ai_ir_partial_trace():
     ir = _ai_ir()
     ir.provenance = ir.provenance[:1] if ir.provenance else []
     # _ai_ir 清空了 provenance，故这里手工只登记第一个场景
-    from loom.ir.models import Provenance
+    from keel.ir.models import Provenance
 
     ir.provenance = [
         Provenance(
@@ -110,7 +110,7 @@ def _ai_ir_partial_trace():
 
 
 def test_legal_layer(t: T) -> None:
-    from loom.audit.selfcheck import BLOCKED, MANUAL, OK, WARN, pre_submit_check
+    from keel.audit.selfcheck import BLOCKED, MANUAL, OK, WARN, pre_submit_check
 
     t.group("1. 法律义务层")
 
@@ -154,7 +154,7 @@ def test_legal_layer(t: T) -> None:
 
 
 def test_manual_is_a_third_state(t: T) -> None:
-    from loom.audit.selfcheck import pre_submit_check
+    from keel.audit.selfcheck import pre_submit_check
 
     t.group("2. 「待人工确认」是独立的一态")
 
@@ -183,8 +183,8 @@ def test_manual_is_a_third_state(t: T) -> None:
 
 
 def test_dimensions_are_derived(t: T) -> None:
-    from loom.audit.selfcheck import DIMENSIONS, _audit_capabilities, pre_submit_check
-    from loom.validators import available
+    from keel.audit.selfcheck import DIMENSIONS, _audit_capabilities, pre_submit_check
+    from keel.validators import available
 
     t.group("3. 维度覆盖是派生的，不是手写的")
 
@@ -198,14 +198,14 @@ def test_dimensions_are_derived(t: T) -> None:
     registry = set(available())
     audit_mods = _audit_capabilities()
     expect = sum(
-        1 for d in DIMENSIONS if d.loom and set(d.loom) <= (registry | audit_mods)
+        1 for d in DIMENSIONS if d.keel and set(d.keel) <= (registry | audit_mods)
     )
     t.eq(covered, expect, f"覆盖数 == 现算的能力数（{covered}/{total}）")
 
     # 反例：任何一个维度的能力名写错（指向不存在的东西），
     # 它必须立刻掉出覆盖集 —— 这正是第一版 `audit:style_drift` 的教训
-    # （那个 code 不在 registry 里，于是 dress 被误判成「Loom 不做」）。
-    bad = [d.key for d in DIMENSIONS if d.loom and not d.covered]
+    # （那个 code 不在 registry 里，于是 dress 被误判成「Keel 不做」）。
+    bad = [d.key for d in DIMENSIONS if d.keel and not d.covered]
     t.eq(bad, [], f"没有维度因能力名写错而掉出覆盖集（坏项：{bad}）")
 
     # audit 能力清单必须真的包含那几个模块
@@ -213,8 +213,8 @@ def test_dimensions_are_derived(t: T) -> None:
     t.ok("dress" in audit_mods, "dress 被识别为能力")
     t.ok("rhythm" in audit_mods, "rhythm 被识别为能力")
 
-    # 「Loom 结构上不做」的维度必须名副其实：loom 为空
-    structural = [d.key for d in DIMENSIONS if not d.loom]
+    # 「Keel 结构上不做」的维度必须名副其实：keel 为空
+    structural = [d.key for d in DIMENSIONS if not d.keel]
     t.ok(len(structural) >= 3, f"至少三个维度被标为结构上不可检（{structural}）")
     for key in structural:
         d = next(x for x in DIMENSIONS if x.key == key)
@@ -227,8 +227,8 @@ def test_dimensions_are_derived(t: T) -> None:
 
 
 def test_labels_and_metadata(t: T) -> None:
-    from loom.audit.selfcheck import content_id, implicit_metadata, required_labels
-    from loom.ir.models import Medium
+    from keel.audit.selfcheck import content_id, implicit_metadata, required_labels
+    from keel.ir.models import Medium
     from tests.fixtures import clean_copy
 
     t.group("4. 显式标识 / 隐式标识 / 内容编号")
@@ -246,7 +246,7 @@ def test_labels_and_metadata(t: T) -> None:
 
     # 微短剧额外一条（第 34 条：每集明显位置）
     md = clean_copy(Medium.MICRO_DRAMA)
-    from loom.ir.enums import ChunkOrigin
+    from keel.ir.enums import ChunkOrigin
 
     for s in md.scenes:
         s.origin = ChunkOrigin.AI_GENERATED
@@ -283,7 +283,7 @@ def test_labels_and_metadata(t: T) -> None:
 def test_export(t: T) -> None:
     import json
 
-    from loom.audit.selfcheck import pre_submit_check
+    from keel.audit.selfcheck import pre_submit_check
 
     t.group("5. 报告可导出")
 
@@ -309,13 +309,13 @@ def test_export(t: T) -> None:
 def test_no_anti_detect(t: T) -> None:
     t.group("6. 红线：没有反检测出口")
 
-    import loom.cli as cli
+    import keel.cli as cli
 
     src = Path(cli.__file__).read_text(encoding="utf-8")
     for word in ("anti-detect", "anti_detect", "降AI", "降 AI", "humanize", "洗稿"):
         t.ok(word not in src, f"CLI 里不存在 {word!r}")
 
-    from loom.audit import selfcheck
+    from keel.audit import selfcheck
 
     s = Path(selfcheck.__file__).read_text(encoding="utf-8")
     t.ok("反检测" in s, "自检模块**正面说明**了它不是反检测（不是回避话题）")

@@ -81,7 +81,7 @@ class T:
 
 def _ps(*specs):
     """specs: (diff_id, source_card, target_card, field, verdict)"""
-    from loom.ir.proposal import Diff, DiffStatus, ProposalSet
+    from keel.ir.proposal import Diff, DiffStatus, ProposalSet
 
     ps = ProposalSet()
     for did, source, target, field, verdict in specs:
@@ -113,8 +113,8 @@ def _ps(*specs):
 
 
 def test_record(t: T) -> None:
-    from loom.ir.proposal import DiffStatus
-    from loom.provenance.telemetry import DecisionTelemetry
+    from keel.ir.proposal import DiffStatus
+    from keel.provenance.telemetry import DecisionTelemetry
 
     t.group("1. 记录一次裁决")
 
@@ -149,7 +149,7 @@ def test_record(t: T) -> None:
 
 
 def test_accept_rate(t: T) -> None:
-    from loom.provenance.telemetry import DecisionTelemetry
+    from keel.provenance.telemetry import DecisionTelemetry
 
     t.group("2. 【核心】accept_rate（精确数值）")
 
@@ -198,7 +198,7 @@ def test_accept_rate(t: T) -> None:
 
 
 def test_distributions(t: T) -> None:
-    from loom.provenance.telemetry import DecisionTelemetry
+    from keel.provenance.telemetry import DecisionTelemetry
 
     t.group("3. 【核心】三个分布各自分区")
 
@@ -254,7 +254,7 @@ def test_distributions(t: T) -> None:
 
 
 def test_zero_decision(t: T) -> None:
-    from loom.provenance.telemetry import DecisionTelemetry
+    from keel.provenance.telemetry import DecisionTelemetry
 
     t.group("4. 零裁决（不除零、不编造）")
 
@@ -285,7 +285,7 @@ def test_zero_decision(t: T) -> None:
 
 
 def test_stats(t: T) -> None:
-    from loom.provenance.telemetry import DecisionTelemetry
+    from keel.provenance.telemetry import DecisionTelemetry
 
     t.group("5. stats() 汇总")
 

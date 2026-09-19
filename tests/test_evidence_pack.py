@@ -19,10 +19,10 @@ from pathlib import Path
 # 让本文件既能 `python tests/test_*.py` 直接跑，也能被 unittest discover 发现。
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.ir.enums import Medium
-from loom.ir.models import NarrativeIR
-from loom.provenance.evidence_pack import build_evidence_pack
-from loom.validators.base import run_all
+from keel.ir.enums import Medium
+from keel.ir.models import NarrativeIR
+from keel.provenance.evidence_pack import build_evidence_pack
+from keel.validators.base import run_all
 
 from tests.fixtures import build_clean_ir
 
@@ -79,7 +79,7 @@ class EvidencePackTest(unittest.TestCase):
     def test_decisions_json_captures_proposals(self) -> None:
         """若 IR 含已裁决提案，decisions.json 必须逐条记录（主张证据）。"""
         ir = self.ir.model_copy(deep=True)
-        from loom.ir.proposal import Diff, DiffStatus
+        from keel.ir.proposal import Diff, DiffStatus
 
         ir.proposals = [
             Diff(

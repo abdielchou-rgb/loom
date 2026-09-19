@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""`loom/render/export.py` 单元测试：按作品报告导出（P5）。
+"""`keel/render/export.py` 单元测试：按作品报告导出（P5）。
 
 守的是三条硬约束，每条都能被证伪（改实现后本测试必须变红，已逐条实测）：
 
@@ -33,8 +33,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.ir.enums import Medium
-from loom.render.export import export_report, to_pdf, work_fingerprint
+from keel.ir.enums import Medium
+from keel.render.export import export_report, to_pdf, work_fingerprint
 from tests.fixtures import build_clean_ir
 
 

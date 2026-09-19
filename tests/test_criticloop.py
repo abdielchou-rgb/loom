@@ -37,10 +37,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.audit.anti_slop import scan_slop
-from loom.ir.enums import Medium
-from loom.llm.mock import MockGenerator
-from loom.pipeline.engines import CriticLoop
+from keel.audit.anti_slop import scan_slop
+from keel.ir.enums import Medium
+from keel.llm.mock import MockGenerator
+from keel.pipeline.engines import CriticLoop
 
 RESULTS: list[tuple[str, bool, str]] = []
 

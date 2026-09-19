@@ -30,16 +30,16 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import Medium  # noqa: E402
-from loom.ir.medium_craft import (  # noqa: E402
+from keel.ir.enums import Medium  # noqa: E402
+from keel.ir.medium_craft import (  # noqa: E402
     MEDIUM_CRAFT,
     craft_brief,
     craft_for,
     length_hint,
     split_slugline,
 )
-from loom.llm import MockGenerator  # noqa: E402
-from loom.pipeline import LoomPipeline  # noqa: E402
+from keel.llm import MockGenerator  # noqa: E402
+from keel.pipeline import KeelPipeline  # noqa: E402
 
 _IDEA = "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字"
 
@@ -138,7 +138,7 @@ def test_length(t: T) -> None:
 
 def test_brief(t: T) -> None:
     print("\n── 4. 提示词注入 ──")
-    from loom.llm.base import REGISTRY
+    from keel.llm.base import REGISTRY
 
     p = REGISTRY.get("prose")
     t.ok("{medium_craft}" in p.template, "prose 模板注入了形态规格")
@@ -179,7 +179,7 @@ def _bodies(patch: bool = False) -> dict[str, str]:
 
     patch=True 时注入变异：所有媒介退化成小说散文。
     """
-    import loom.llm.mock as mock
+    import keel.llm.mock as mock
 
     original = mock._prose_for_medium
     if patch:
@@ -189,7 +189,7 @@ def _bodies(patch: bool = False) -> dict[str, str]:
     try:
         out: dict[str, str] = {}
         for m in Medium:
-            ir = LoomPipeline(MockGenerator()).run(
+            ir = KeelPipeline(MockGenerator()).run(
                 _IDEA, medium=m, scene_count=2,
                 words_per_scene=150, max_rounds=1,
             ).ir

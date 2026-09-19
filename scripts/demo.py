@@ -17,20 +17,20 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from examples.demo_story import build_demo_ir  # noqa: E402
-from loom.audit.anti_slop import scan_ir, scan_slop  # noqa: E402
-from loom.ir.models import NarrativeIR  # noqa: E402
-from loom.provenance.meter import ProvenanceLedger  # noqa: E402
-from loom.policy import PolicyError  # noqa: E402
-from loom.render import (  # noqa: E402
+from keel.audit.anti_slop import scan_ir, scan_slop  # noqa: E402
+from keel.ir.models import NarrativeIR  # noqa: E402
+from keel.provenance.meter import ProvenanceLedger  # noqa: E402
+from keel.policy import PolicyError  # noqa: E402
+from keel.render import (  # noqa: E402
     render_fountain,
     render_ink,
     render_renpy,
     render_storyboard,
     render_text,
 )
-from loom.render.text import render_outline  # noqa: E402
-from loom.runtime.director import StoryRuntime, randomized_playthroughs  # noqa: E402
-from loom.validators import registry_stats, run_all  # noqa: E402
+from keel.render.text import render_outline  # noqa: E402
+from keel.runtime.director import StoryRuntime, randomized_playthroughs  # noqa: E402
+from keel.validators import registry_stats, run_all  # noqa: E402
 
 OUT = ROOT / "out"
 BAR = "═" * 68
@@ -74,7 +74,7 @@ def main() -> int:
     except Exception:
         print("  extra=forbid ✓ 未知字段被拒绝（schema 是硬约束）")
     try:
-        from loom.ir.models import StateDelta
+        from keel.ir.models import StateDelta
         StateDelta(entity_id="x", attribute="y", before=1, after=1)
         print("  零增量拒绝   ✗ 未生效")
     except Exception:
@@ -121,7 +121,7 @@ def main() -> int:
 
     # ---------------------------------------------------------------- 6
     section(6, "渲染：同一 IR -> 5 种媒介（2.0 免费继承）")
-    # 网文正文受策略闸门约束（起点/番茄/晋江 禁 AI 直出正文，见 loom/policy.py）。
+    # 网文正文受策略闸门约束（起点/番茄/晋江 禁 AI 直出正文，见 keel/policy.py）。
     # 这里**故意不加** force_prose —— demo 应该展示默认行为，而不是绕过它。
     try:
         novel_md = render_text(ir, show_meta=True)
@@ -188,7 +188,7 @@ def main() -> int:
 
     # ---------------------------------------------------------------- 10
     section(10, "结构模板插件（方法论中立）")
-    from loom.ir.templates import list_templates
+    from keel.ir.templates import list_templates
 
     for t in list_templates():
         print(f"  {t.id:<22} {t.name:<18} {len(t.beats):>2} 节拍  ← {t.origin}")

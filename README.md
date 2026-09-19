@@ -1,5 +1,9 @@
-# Loom · 叙事编译器
+# 龙骨 Keel · 叙事编译器
 
+> 中文名**龙骨**，取自吊顶与船体里那层**看不见却承重**的结构 ——
+> 正对应本项目的立场：决定一部作品站不站得住的，是正文之下那层结构。
+> 英文名 **Keel** 是同一件事的另一个说法：龙骨，先定龙骨，再定船。
+>
 > **一个不谄媚的、站在作者这边的对抗性编辑。**
 >
 > 它不替你写，也不夸你写得好。它用结构化的证据指出你的故事哪里站不住、
@@ -13,17 +17,17 @@
 
 ## 它是什么，不是什么
 
-Loom **不是「写稿机器」**。它是一个**叙事编译器**：把你的想法编译成一份
+Keel **不是「写稿机器」**。它是一个**叙事编译器**：把你的想法编译成一份
 结构化的**叙事中间表示（Narrative IR）**，再把它渲染成小说、剧本、互动小说、
 galgame、漫画分镜，或一份可分享的体检报告。
 
-文本只是 IR 的一个视图——**IR 才是产品本体**。所以 Loom 卖的不是「一篇稿子」，
+文本只是 IR 的一个视图——**IR 才是产品本体**。所以 Keel 卖的不是「一篇稿子」，
 而是「关于这篇稿子的判断」：它哪里成立、哪里矛盾、哪里合规、哪里会垮。
 
-因此扩展 Loom 的方式是「加一个 renderer」，而不是往核心里塞模块。
+因此扩展 Keel 的方式是「加一个 renderer」，而不是往核心里塞模块。
 
 > 文本的生产成本趋近于零之后，稀缺的不再是故事，而是**关于故事的信息**。
-> Loom 的产品是信息，不是故事。
+> Keel 的产品是信息，不是故事。
 
 ## 快速开始
 
@@ -31,7 +35,7 @@ galgame、漫画分镜，或一份可分享的体检报告。
 > 下面这是给已经知道项目是什么的人备的速查。
 > 版本记录见 [`CHANGELOG.md`](CHANGELOG.md)。
 
-下面每条命令都离线可跑。Loom 不预测你的故事会不会火——只告诉你它哪里站不住、哪里合规、哪里要改。
+下面每条命令都离线可跑。Keel 不预测你的故事会不会火——只告诉你它哪里站不住、哪里合规、哪里要改。
 
 ```bash
 # 建环境
@@ -40,7 +44,7 @@ python -m venv .venv
 # source .venv/bin/activate && pip install -r requirements.txt  # macOS/Linux
 
 # 一句话想法 -> 正文（1.0 主流程，无需 API key）
-.venv/Scripts/python.exe -m loom.cli write "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字" \
+.venv/Scripts/python.exe -m keel.cli write "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字" \
     --scenes 6 --words 600 --out out/demo1
 
 # 端到端验证（10 个环节：IR -> 正文 -> 体检 -> 观众模拟 -> A/B -> 渲染）
@@ -58,7 +62,7 @@ python -m venv .venv
 > 接真模型只需换一行：`build_generator(model="gpt-4o")`。
 
 > **不想敲命令？** 起一个本地网页界面，在浏览器里填一句话想法、点「生成」即可：
-> `.venv/Scripts/python.exe -m loom.cli web` → 打开 http://127.0.0.1:8000/ 。
+> `.venv/Scripts/python.exe -m keel.cli web` → 打开 http://127.0.0.1:8000/ 。
 > 它只监听本机，数据不出本机，跑的是和命令行**完全相同**的生成逻辑（UI 只是视图）。
 
 ## 命令行
@@ -66,30 +70,30 @@ python -m venv .venv
 ```bash
 P=.venv/Scripts/python.exe
 
-$P -m loom.cli write    "一句话想法" --out out/            # 想法 -> IR -> 正文（1.0 主命令）
+$P -m keel.cli write    "一句话想法" --out out/            # 想法 -> IR -> 正文（1.0 主命令）
                                                           #   ↑ 同时产出 report.html（双击可看）
-$P -m loom.cli audience out/ir.json                       # 观众模拟（留存曲线 + 观众原话）
-$P -m loom.cli audit    out/ir.json                       # 故事体检（健康分 + 分级建议）
-$P -m loom.cli recheck  out/ir.json                       # 旧 IR 重跑 + 「上次以来变了什么」
-$P -m loom.cli render   out/ir.json -f renpy              # 渲染指定媒介
-$P -m loom.cli render   out/ir.json -f text --meta        # 正文内嵌结构元信息
-$P -m loom.cli outline  out/ir.json                       # 大纲（IR 层人工确认）
-$P -m loom.cli lore     out/ir.json --text "沈砚掏出腰牌"   # 查看 lore 激活集
-$P -m loom.cli play     out/ir.json --runs 500            # 随机化通关测试
-$P -m loom.cli compliance out/ir.json --json out/c.json   # AI 参与度合规报告
-$P -m loom.cli submit-check out/ir.json       # 投稿前合规自检（能不能投）
-$P -m loom.cli process-report out/ir.json --out 过程.md  # 创作过程报告（申诉举证）
-$P -m loom.cli templates -v                               # 列出结构模板
+$P -m keel.cli audience out/ir.json                       # 观众模拟（留存曲线 + 观众原话）
+$P -m keel.cli audit    out/ir.json                       # 故事体检（健康分 + 分级建议）
+$P -m keel.cli recheck  out/ir.json                       # 旧 IR 重跑 + 「上次以来变了什么」
+$P -m keel.cli render   out/ir.json -f renpy              # 渲染指定媒介
+$P -m keel.cli render   out/ir.json -f text --meta        # 正文内嵌结构元信息
+$P -m keel.cli outline  out/ir.json                       # 大纲（IR 层人工确认）
+$P -m keel.cli lore     out/ir.json --text "沈砚掏出腰牌"   # 查看 lore 激活集
+$P -m keel.cli play     out/ir.json --runs 500            # 随机化通关测试
+$P -m keel.cli compliance out/ir.json --json out/c.json   # AI 参与度合规报告
+$P -m keel.cli submit-check out/ir.json       # 投稿前合规自检（能不能投）
+$P -m keel.cli process-report out/ir.json --out 过程.md  # 创作过程报告（申诉举证）
+$P -m keel.cli templates -v                               # 列出结构模板
 
-$P -m loom.cli run      "一句话想法" --scenes 8 --checkpoint   # 自动驾驶（无人值守）
-$P -m loom.cli proposals out/ir.json                      # 列出待裁决的结构提案
-$P -m loom.cli decide   out/ir.json --all --by "human:我"  # 裁决（**默认写回原文件**）
+$P -m keel.cli run      "一句话想法" --scenes 8 --checkpoint   # 自动驾驶（无人值守）
+$P -m keel.cli proposals out/ir.json                      # 列出待裁决的结构提案
+$P -m keel.cli decide   out/ir.json --all --by "human:我"  # 裁决（**默认写回原文件**）
 ```
 
-### 自动驾驶（`loom run`）：不喊停就一直写
+### 自动驾驶（`keel run`）：不喊停就一直写
 
 ```bash
-$P -m loom.cli run "想法" --scenes 8 --words 400 --checkpoint \
+$P -m keel.cli run "想法" --scenes 8 --words 400 --checkpoint \
       --max-scenes 20 --max-cost 5 --max-minutes 30
 ```
 
@@ -100,7 +104,7 @@ $P -m loom.cli run "想法" --scenes 8 --words 400 --checkpoint \
 > 曾经还有一条「全部承诺已兑现」，已删除：承诺的 `satisfied` 是**声明式**
 > 字段，引擎不该猜它；而按 `must_hold_at` 派生停止条件在增量路径上恒真
 > （`AutoWriter` 建第一场时就绑锚点，7 条承诺全落到 `sc1`）。
-> 详见 `loom/pipeline/auto.py` 中 `_commitments_done` 旧址的说明。
+> 详见 `keel/pipeline/auto.py` 中 `_commitments_done` 旧址的说明。
 
 自动驾驶推进的是 **IR**，不是续写文本：每轮产出场景卡 + 正文，然后把
 `state_deltas` 提交回 IR。否则 IR 静止而文本变长，几场之后校验器就在
@@ -109,12 +113,12 @@ $P -m loom.cli run "想法" --scenes 8 --words 400 --checkpoint \
 暂停后的续跑**必须显式指回人裁过的那份 IR**：
 
 ```bash
-loom decide out/.auto/paused.json --all            # 人做判断
-loom run "想法" --checkpoint --resume-from out/.auto/paused.json
+keel decide out/.auto/paused.json --all            # 人做判断
+keel run "想法" --checkpoint --resume-from out/.auto/paused.json
 ```
 
 不写 `--resume-from` 会从检查点续跑，而检查点存的是**机器暂停那一刻**的 IR ——
-你刚做的裁决会被无声覆盖。这种情况 Loom 会先**警告**再继续。
+你刚做的裁决会被无声覆盖。这种情况 Keel 会先**警告**再继续。
 
 ### 决策留痕 = 申诉时真正要的那份证据
 
@@ -122,14 +126,14 @@ loom run "想法" --checkpoint --resume-from out/.auto/paused.json
 剩下的不是 AI 写的，说不出**人做了什么**。申诉要的是**主张证据**：
 
 ```
-loom run  →  机器提案（proposed_at / proposed_by）
-loom decide → 人类裁决（decided_at / decided_by）  ← 驳回的证据力强于采纳
-loom process-report → 一条完整的时间线
+keel run  →  机器提案（proposed_at / proposed_by）
+keel decide → 人类裁决（decided_at / decided_by）  ← 驳回的证据力强于采纳
+keel process-report → 一条完整的时间线
 ```
 
-`loom decide` **默认写回原 `ir.json`**：不落盘的裁决不是裁决，
+`keel decide` **默认写回原 `ir.json`**：不落盘的裁决不是裁决，
 人做了判断而系统没记住，申诉时这条证据不存在。
-但要把话说全：这些时刻是 Loom **自报**的墙钟（`loom/clock.py`），
+但要把话说全：这些时刻是 Keel **自报**的墙钟（`keel/clock.py`），
 不签名、不存证 —— 需要对抗性质疑请用第三方时间戳。
 
 ## 核心设计
@@ -153,7 +157,7 @@ Bhat et al., *Reactive Writers*, CHI 2026（19 人访谈 + 1,291 次协同写作
 与 AI 协同写作时，作者**察觉不到** AI 对自己方向的影响，却**感觉完全掌控**
 —— 因为在原则上他们随时可以编辑最终文本。
 
-所以 Loom 在**写作时**（不只是申诉时）回显：
+所以 Keel 在**写作时**（不只是申诉时）回显：
 
 ```
 已做判断 12 次（采纳 5 / 驳回 7） · 待你裁决 1 条 · 人工改写场景 3 个
@@ -165,10 +169,10 @@ Bhat et al., *Reactive Writers*, CHI 2026（19 人访谈 + 1,291 次协同写作
 ### 网文正文默认不出（媒介策略闸门）
 
 起点 / 番茄 / 晋江 一致禁止 AI 直出正文（起点 >10% 即处理）。
-**同一个 Loom：做网文是「违规工具」，做剧本是「合规工具」。**
+**同一个 Keel：做网文是「违规工具」，做剧本是「合规工具」。**
 
 故 `web_novel` 媒介默认**不生成正文**，需要时 `--force-prose` 显式放行并留痕。
-这是**策略不是删除** —— 政策会变，改一行即可。见 `loom/policy.py`。
+这是**策略不是删除** —— 政策会变，改一行即可。见 `keel/policy.py`。
 
 ### 流水线是严格线性的，没有循环依赖
 
@@ -285,7 +289,7 @@ Berlyne 习惯化 / Egri 前提必须被论证 / 认知叙事学 ToM …
   「下一场怎么用」，等于把谜题台账又做了一遍）。它**从已声明的结构反推，
   不编造内容**：不播种秘密、不播种递归信念，那是创作内容不是结构反推。
 - **`Proposer`** 把结构类问题转成 `Diff` 提案，**绝不自动应用**。
-  作者用 `LoomPipeline.decide()` 一键采纳/拒绝，裁决进决策遥测
+  作者用 `KeelPipeline.decide()` 一键采纳/拒绝，裁决进决策遥测
   （采纳率 + 按来源/去向/字段分布）。
 
 边界不变：`CriticLoop` 仍然只**自动**修文风类；结构类从「留给人决策」
@@ -300,9 +304,9 @@ Berlyne 习惯化 / Egri 前提必须被论证 / 认知叙事学 ToM …
 | PASS | 跑过了，没问题 | 否 |
 | FAIL | 跑过了，有 Finding | 是 |
 | SKIPPED | 数据不足，**没跑** | 否 |
-| CRASHED | **校验器自己崩了** | 否（这是 Loom 的 bug，不是稿子的缺陷） |
+| CRASHED | **校验器自己崩了** | 否（这是 Keel 的 bug，不是稿子的缺陷） |
 
-需求是**声明式**的（`loom/validators/base.py` 的 `REQUIRES` 表），
+需求是**声明式**的（`keel/validators/base.py` 的 `REQUIRES` 表），
 所有校验器函数一行都不用改。理由：需求表本身可被测试断言 ——
 「注册了却永远不会被真正执行」的死校验器会立刻暴露。
 
@@ -385,24 +389,24 @@ Save the Cat 15 节拍 · 三幕 · 起承转合 · 章回体 · 微短剧节拍
 ## 目录
 
 ```
-loom/ir/          IR 模型（base/models/tom/proposal）、枚举、结构模板插件、
+keel/ir/          IR 模型（base/models/tom/proposal）、枚举、结构模板插件、
                   情感弧线规范（arcs.py）、工艺装置词表（devices.py）
-loom/llm/         Generator 抽象 / 提示词版本化 / 离线参考实现 / LiteLLM 接入 /
+keel/llm/         Generator 抽象 / 提示词版本化 / 离线参考实现 / LiteLLM 接入 /
                   CHANGES 自申报解析（declaration.py）
-loom/pipeline/    10 个引擎 + 编排层（idea -> IR -> 正文 -> 提案）
-loom/audience/    观众模拟（人格库 / 信号抽取 / hazard 模型 / A-B / 校准 /
+keel/pipeline/    10 个引擎 + 编排层（idea -> IR -> 正文 -> 提案）
+keel/audience/    观众模拟（人格库 / 信号抽取 / hazard 模型 / A-B / 校准 /
                   认知负荷 cognitive.py）
-loom/validators/  35 个校验器 + 9 个报表项（结构 + 一致性 + 叙事 + 平台合规）
-loom/audit/       反 slop 扫描 + 工艺检测器（craft.py）+ 风格漂移（dress.py）
+keel/validators/  35 个校验器 + 9 个报表项（结构 + 一致性 + 叙事 + 平台合规）
+keel/audit/       反 slop 扫描 + 工艺检测器（craft.py）+ 风格漂移（dress.py）
                   + 传输度（transportation.py）+ CSN 数值事实抽取（csn.py）
                   + 平台合规检测器（rhythm.py）+ 投稿前自检（selfcheck.py）
-loom/render/      6 个渲染器（text / fountain / storyboard / ink / renpy / html）
-loom/runtime/     Waypoint + Storylet + Director + 事件冷却矩阵（cooldown.py）+ 随机通关测试
-loom/provenance/  溯源台账（meter.py）+ AI 参与度合规报告 + 决策遥测（telemetry.py）
+keel/render/      6 个渲染器（text / fountain / storyboard / ink / renpy / html）
+keel/runtime/     Waypoint + Storylet + Director + 事件冷却矩阵（cooldown.py）+ 随机通关测试
+keel/provenance/  溯源台账（meter.py）+ AI 参与度合规报告 + 决策遥测（telemetry.py）
                   + 创作过程报告 / 申诉举证（process.py）
                   + 写作时觉察回显（awareness.py）
-loom/policy.py    媒介策略闸门（网文正文默认不出，可显式放行并留痕）
-loom/cli.py       命令行入口
+keel/policy.py    媒介策略闸门（网文正文默认不出，可显式放行并留痕）
+keel/cli.py       命令行入口
 tests/fixtures.py          校验器 fixture 库（干净基线 + 40 个反例变异）
 tests/test_csn.py          CSN 数值事实单元测试（TDD，零依赖）
 tests/test_cooldown.py     事件冷却矩阵单元测试（TDD，零依赖）
@@ -444,11 +448,11 @@ scripts/demo.py            IR 层验证：校验器 / lore / 运行时 / 合规 
 
 ### 产品红线：不做反检测
 
-同类工具里有专门的「反检测改写」模式（例如 `--mode anti-detect`）。**Loom 不做。**
+同类工具里有专门的「反检测改写」模式（例如 `--mode anti-detect`）。**Keel 不做。**
 
 | | |
 |---|---|
-| **做** | 用与平台同一套特征空间**如实报告**（`loom.cli submit-check`），并给出真的改写方向；把「人做了哪些判断」记录下来供申诉举证（`loom.cli process-report`） |
+| **做** | 用与平台同一套特征空间**如实报告**（`keel.cli submit-check`），并给出真的改写方向；把「人做了哪些判断」记录下来供申诉举证（`keel.cli process-report`） |
 | **不做** | 按平台阈值**反向优化**的一键改写；把 AI 内容伪装成人类创作的任何功能；隐藏阈值与词表 |
 
 三条理由：
@@ -460,7 +464,7 @@ scripts/demo.py            IR 层验证：校验器 / lore / 运行时 / 合规 
    与本系统的合规定位直接冲突。
 3. **商业上自杀** —— 一旦被贴上「AI 洗稿工具」标签，平台申诉通道与生态全部关闭。
 
-分界线：**Loom 帮作者「真的写得更好」，不帮作者「看起来像人写的」。**
+分界线：**Keel 帮作者「真的写得更好」，不帮作者「看起来像人写的」。**
 前者是产品，后者是伪造。
 
 这条红线**可机检**：`tests/test_redlines.py` 用 AST 扫描全部源码，
@@ -472,7 +476,7 @@ scripts/demo.py            IR 层验证：校验器 / lore / 运行时 / 合规 
 ## 理论覆盖：对表与差距
 
 [`理论覆盖清单_2026-09-15.md`](理论覆盖清单_2026-09-15.md) 是**实测对表**：
-把「所有高引用论文」与「豆瓣 ≥7 的剧本创作书」列成两张表，逐条标注 Loom 的覆盖状态。
+把「所有高引用论文」与「豆瓣 ≥7 的剧本创作书」列成两张表，逐条标注 Keel 的覆盖状态。
 
 现状（不粉饰）：
 

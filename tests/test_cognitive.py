@@ -11,7 +11,7 @@
 ── 为什么这个文件的核心是「窗口」而不是「单场」 ────────────
 
 单场负荷的测试**证明不了本模块的价值** —— 逐场判定已经由
-`loom/audience/simulator.hazard` 在做。本模块唯一值得存在的能力是
+`keel/audience/simulator.hazard` 在做。本模块唯一值得存在的能力是
 **跨场累加**，所以第 4 组是核心：
 
     sc0  负荷 0.0
@@ -96,8 +96,8 @@ def _s(
     flashback: bool = False,
     freq=None,
 ):
-    from loom.ir.enums import Frequency, SceneOutcome
-    from loom.ir.models import SceneNode, TimePoint
+    from keel.ir.enums import Frequency, SceneOutcome
+    from keel.ir.models import SceneNode, TimePoint
 
     return SceneNode(
         id=sid,
@@ -120,8 +120,8 @@ def _s(
 
 
 def _ir(scenes):
-    from loom.ir.enums import ArcShape
-    from loom.ir.models import CommitmentLayer, NarrativeIR
+    from keel.ir.enums import ArcShape
+    from keel.ir.models import CommitmentLayer, NarrativeIR
 
     return NarrativeIR(
         title="测试",
@@ -142,7 +142,7 @@ def _ir(scenes):
 
 
 def test_scene_load(t: T) -> None:
-    from loom.audience.cognitive import CognitivePriors, scene_load
+    from keel.audience.cognitive import CognitivePriors, scene_load
 
     t.group("1. 单场负荷分解（精确数值）")
 
@@ -199,7 +199,7 @@ def test_scene_load(t: T) -> None:
 
 
 def test_character_cost(t: T) -> None:
-    from loom.audience.cognitive import scene_load
+    from keel.audience.cognitive import scene_load
 
     t.group("2. 角色成本（×0.5 回归折扣）")
 
@@ -230,8 +230,8 @@ def test_character_cost(t: T) -> None:
 
 
 def test_flashback_signals(t: T) -> None:
-    from loom.ir.enums import Frequency
-    from loom.audience.cognitive import scene_load
+    from keel.ir.enums import Frequency
+    from keel.audience.cognitive import scene_load
 
     t.group("3. 闪回类信号（is_flashback / frequency）")
 
@@ -272,7 +272,7 @@ def _accumulation_ir():
 
 
 def test_window_accumulation(t: T) -> None:
-    from loom.audience.cognitive import scan_ir, scene_load, windowed_loads
+    from keel.audience.cognitive import scan_ir, scene_load, windowed_loads
 
     t.group("4. 【核心】窗口累加（单场合格，累计超线）")
 
@@ -317,7 +317,7 @@ def test_window_accumulation(t: T) -> None:
 
 
 def test_window_sizes(t: T) -> None:
-    from loom.audience.cognitive import windowed_loads
+    from keel.audience.cognitive import windowed_loads
 
     t.group("5. 窗口宽度语义")
 
@@ -346,7 +346,7 @@ def test_window_sizes(t: T) -> None:
 
 
 def test_context_changes_verdict(t: T) -> None:
-    from loom.audience.cognitive import scene_load, windowed_loads
+    from keel.audience.cognitive import scene_load, windowed_loads
 
     t.group("6. 上下文改变结论（同一个场景，两种判定）")
 
@@ -397,7 +397,7 @@ def test_context_changes_verdict(t: T) -> None:
 
 
 def test_threshold_boundary(t: T) -> None:
-    from loom.audience.cognitive import scan_ir
+    from keel.audience.cognitive import scan_ir
 
     t.group("7. 阈值边界（12.0 恰好不报）")
 

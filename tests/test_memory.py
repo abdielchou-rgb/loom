@@ -1,4 +1,4 @@
-"""动态叙事记忆（`loom/pipeline/memory.py`）的单元测试。
+"""动态叙事记忆（`keel/pipeline/memory.py`）的单元测试。
 
 跑法：
     .venv/Scripts/python.exe tests/test_memory.py
@@ -34,15 +34,15 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.models import (  # noqa: E402
+from keel.ir.models import (  # noqa: E402
     LoreEntry,
     Lorebook,
     SceneNode,
     StateDelta,
     TimePoint,
 )
-from loom.pipeline import memory as mem  # noqa: E402
-from loom.pipeline.memory import (  # noqa: E402
+from keel.pipeline import memory as mem  # noqa: E402
+from keel.pipeline.memory import (  # noqa: E402
     MemoryRecord,
     NarrativeMemory,
     memory_key,

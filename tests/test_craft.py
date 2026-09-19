@@ -82,8 +82,8 @@ class T:
 
 
 def _scene(sid: str, prose: str | None, index: int = 0):
-    from loom.ir.enums import SceneOutcome
-    from loom.ir.models import SceneNode, TimePoint
+    from keel.ir.enums import SceneOutcome
+    from keel.ir.models import SceneNode, TimePoint
 
     return SceneNode(
         id=sid,
@@ -104,8 +104,8 @@ def _scene(sid: str, prose: str | None, index: int = 0):
 
 
 def _ir(scenes):
-    from loom.ir.enums import ArcShape
-    from loom.ir.models import CommitmentLayer, NarrativeIR
+    from keel.ir.enums import ArcShape
+    from keel.ir.models import CommitmentLayer, NarrativeIR
 
     return NarrativeIR(
         title="工艺检测器测试",
@@ -126,8 +126,8 @@ def _ir(scenes):
 
 
 def test_micro_tension(t: T) -> None:
-    from loom.audit.craft import micro_tension_findings, scan_micro_tension
-    from loom.ir.enums import Severity
+    from keel.audit.craft import micro_tension_findings, scan_micro_tension
+    from keel.ir.enums import Severity
 
     t.group("1. micro_tension（Maass 微张力）")
 
@@ -179,8 +179,8 @@ def test_micro_tension(t: T) -> None:
 
 
 def test_control(t: T) -> None:
-    from loom.audit.craft import control_findings, scan_control
-    from loom.ir.enums import Severity
+    from keel.audit.craft import control_findings, scan_control
+    from keel.ir.enums import Severity
 
     def rules(text: str) -> set[str]:
         return {h.rule for h in scan_control(text, scene_id="sc1").hits}
@@ -260,8 +260,8 @@ def test_control(t: T) -> None:
 
 
 def test_reality(t: T) -> None:
-    from loom.audit.craft import reality_findings, scan_reality
-    from loom.ir.enums import Severity
+    from keel.audit.craft import reality_findings, scan_reality
+    from keel.ir.enums import Severity
 
     t.group("3. reality_effect（Barthes 现实效应）")
 
@@ -297,8 +297,8 @@ def test_reality(t: T) -> None:
 
 
 def test_show_dont_tell(t: T) -> None:
-    from loom.audit.craft import scan_show_dont_tell, show_dont_tell_findings
-    from loom.ir.enums import Severity
+    from keel.audit.craft import scan_show_dont_tell, show_dont_tell_findings
+    from keel.ir.enums import Severity
 
     t.group("4. show_dont_tell —— 豁免用例 A：直述 + 邻句呈现信号")
 
@@ -379,7 +379,7 @@ def test_show_dont_tell(t: T) -> None:
 
 
 def test_scan_ir(t: T) -> None:
-    from loom.audit.craft import scan_ir
+    from keel.audit.craft import scan_ir
 
     t.group("8. scan_ir —— 跨场 + 跳过空 prose")
 

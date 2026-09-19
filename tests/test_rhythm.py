@@ -7,7 +7,7 @@
 
 ── 关于纪律的一句实话 ─────────────────────────────────────
 
-`loom/audit/rhythm.py` 是先实现的，本文件**后写** —— 这不是 TDD。
+`keel/audit/rhythm.py` 是先实现的，本文件**后写** —— 这不是 TDD。
 为此做了补偿：六个阈值常量全部被**变异测试**过 —— 把每个改成一个永不
 （或恒）触发的值，确认本文件变红。没有这一步，「测试全绿」只说明测试与
 实现一致，不说明测试测到了东西。实测结果（六个全部 RED）：
@@ -96,7 +96,7 @@ class _IR:
 
 
 def test_burstiness_coefficient(t: T) -> None:
-    from loom.audit.rhythm import burstiness
+    from keel.audit.rhythm import burstiness
 
     t.group("1. 爆发度系数 B = (σ − μ) / (σ + μ)")
 
@@ -124,7 +124,7 @@ def test_burstiness_coefficient(t: T) -> None:
 
 
 def test_scene_axis(t: T) -> None:
-    from loom.audit.rhythm import burstiness_findings, scan_burstiness
+    from keel.audit.rhythm import burstiness_findings, scan_burstiness
 
     t.group("2. 场长轴（±5% 口径）")
 
@@ -164,7 +164,7 @@ def test_scene_axis(t: T) -> None:
 
 
 def test_sentence_axis(t: T) -> None:
-    from loom.audit.rhythm import burstiness_findings, scan_burstiness
+    from keel.audit.rhythm import burstiness_findings, scan_burstiness
 
     t.group("3. 句长轴")
 
@@ -215,7 +215,7 @@ def test_sentence_axis(t: T) -> None:
 
 
 def test_adverbs(t: T) -> None:
-    from loom.audit.rhythm import adverb_findings, scan_adverbs
+    from keel.audit.rhythm import adverb_findings, scan_adverbs
 
     t.group("4. 高频副词密度（> 4 次/段）")
 
@@ -257,7 +257,7 @@ def test_adverbs(t: T) -> None:
 
 
 def test_dialogue_rhythm(t: T) -> None:
-    from loom.audit.rhythm import dialogue_rhythm_findings, scan_dialogue_rhythm
+    from keel.audit.rhythm import dialogue_rhythm_findings, scan_dialogue_rhythm
 
     t.group("5. 对话节奏（一问一答工整无打断）")
 
@@ -304,8 +304,8 @@ def test_dialogue_rhythm(t: T) -> None:
 
 
 def test_severity_policy(t: T) -> None:
-    from loom.ir.enums import Severity
-    from loom.audit.rhythm import scan_ir
+    from keel.ir.enums import Severity
+    from keel.audit.rhythm import scan_ir
 
     t.group("6. 严重度政策")
 
@@ -355,7 +355,7 @@ def test_severity_policy(t: T) -> None:
 
 
 def test_registration(t: T) -> None:
-    from loom.validators import ADVISORY, ADVISORY_DEFECT, REPORTS
+    from keel.validators import ADVISORY, ADVISORY_DEFECT, REPORTS
 
     t.group("7. 注册分类")
 

@@ -1,4 +1,4 @@
-"""工艺装置分类学与饱和检测（`loom/ir/devices.py`）—— 测试先行。
+"""工艺装置分类学与饱和检测（`keel/ir/devices.py`）—— 测试先行。
 
 跑法：
     .venv/Scripts/python.exe tests/test_devices.py
@@ -65,7 +65,7 @@ class T:
 
 
 def test_taxonomy(t: T) -> None:
-    from loom.ir.devices import (
+    from keel.ir.devices import (
         ALL_PATTERNS,
         CONFLICT_TYPES,
         EMOTIONAL_ARCS,
@@ -105,7 +105,7 @@ def test_taxonomy(t: T) -> None:
 
 
 def test_infer_patterns(t: T) -> None:
-    from loom.ir.devices import ALL_PATTERNS, infer_patterns
+    from keel.ir.devices import ALL_PATTERNS, infer_patterns
 
     t.group("2. infer_patterns（线性叙事的兜底通道）")
 
@@ -146,7 +146,7 @@ def test_infer_patterns(t: T) -> None:
 
 
 def test_check_saturation(t: T) -> None:
-    from loom.ir.devices import check_saturation
+    from keel.ir.devices import check_saturation
 
     t.group("3. check_saturation（窗口化饱和检测）")
 
@@ -196,9 +196,9 @@ def _ir_with_storylets(*, declared: list[str], scene_value: str, n_scenes: int =
 
     两边刻意**指向不同的装置**，才能验证「显式声明优先于关键词反推」。
     """
-    from loom.ir.devices import ALL_PATTERNS
-    from loom.ir.enums import ArcShape, Focalization, Frequency, SceneOutcome
-    from loom.ir.models import (
+    from keel.ir.devices import ALL_PATTERNS
+    from keel.ir.enums import ArcShape, Focalization, Frequency, SceneOutcome
+    from keel.ir.models import (
         CommitmentLayer,
         NarrativeIR,
         SceneNode,
@@ -257,8 +257,8 @@ def _ir_with_storylets(*, declared: list[str], scene_value: str, n_scenes: int =
 
 
 def test_storylet_branch_regression(t: T) -> None:
-    from loom.ir.devices import infer_patterns
-    from loom.validators import get_validator
+    from keel.ir.devices import infer_patterns
+    from keel.validators import get_validator
 
     t.group("4. 回归：有 storylet 的 IR 上 pattern_saturation 不崩")
 
@@ -312,7 +312,7 @@ def test_storylet_branch_regression(t: T) -> None:
     #     于是全篇只有 1 场能被认出时频率恒为 1.0，必然 ≥ 阈值 ——
     #     一个只出现了一次的装置会被判成「已饱和」。那不是饱和，是数据不足。
     #     原语只负责算频率，够不够判由校验器决定（见 _PATTERN_MIN_OBSERVATIONS）。
-    from loom.validators.structure import _PATTERN_MIN_OBSERVATIONS
+    from keel.validators.structure import _PATTERN_MIN_OBSERVATIONS
 
     t.ok(_PATTERN_MIN_OBSERVATIONS >= 2, "存在「最少可识别场景数」下限")
     for n in range(1, _PATTERN_MIN_OBSERVATIONS):
@@ -339,8 +339,8 @@ def test_storylet_branch_regression(t: T) -> None:
 
 
 def test_single_source_of_truth(t: T) -> None:
-    import loom.ir.devices as D
-    import loom.runtime.cooldown as C
+    import keel.ir.devices as D
+    import keel.runtime.cooldown as C
 
     t.group("5. 单一真源：runtime 重新导出，不是第二份实现")
 

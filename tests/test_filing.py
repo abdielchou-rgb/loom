@@ -1,4 +1,4 @@
-"""备案材料渲染器（`loom/render/filing.py`）单元测试。
+"""备案材料渲染器（`keel/render/filing.py`）单元测试。
 
 覆盖 P5 · 备案材料 A 层 —— 每集 AI 标识清单：
 
@@ -17,8 +17,8 @@ import sys
 if sys_path_boost not in sys.path:
     sys.path.insert(0, sys_path_boost)
 
-from loom.ir.enums import Medium
-from loom.render.filing import build_filing_list, render_filing_csv, render_filing_markdown
+from keel.ir.enums import Medium
+from keel.render.filing import build_filing_list, render_filing_csv, render_filing_markdown
 from tests.fixtures import build_clean_ir, clean_copy
 
 LABEL = "本集由人工智能辅助生成"

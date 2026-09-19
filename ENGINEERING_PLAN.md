@@ -1,11 +1,11 @@
-# Loom 叙事编译器 · 完整工程方案
+# Keel 叙事编译器 · 完整工程方案
 
 > **Idea → Narrative IR → Renderers**
 >
 > 版本 v1.0 ｜ 2026-09-14 ｜ 状态：架构定稿 + 可运行原型
 
 本文档是可直接开工的工程方案。所有数据模型、校验器、渲染器、运行时均已实现并跑通，
-代码见 `loom/`，端到端验证见 `scripts/demo.py`。
+代码见 `keel/`，端到端验证见 `scripts/demo.py`。
 
 ---
 
@@ -23,7 +23,7 @@
 
 ## 1. 系统定位
 
-**一句话：Loom 不是文本生成器，是叙事编译器。**
+**一句话：Keel 不是文本生成器，是叙事编译器。**
 
 输入是想法，输出是 **Narrative IR（叙事中间表示）**；文本、剧本、Ink 脚本、Ren'Py 脚本、
 漫画分镜都只是 IR 的渲染视图。这带来四个直接收益：
@@ -37,9 +37,9 @@
 
 | 真空 | 现状 | 本方案 |
 |---|---|---|
-| Narrative IR → 多后端 transpiler | 市面上只有「从零生成」，没有「从结构编译」 | `loom/render/` 五个 renderer |
+| Narrative IR → 多后端 transpiler | 市面上只有「从零生成」，没有「从结构编译」 | `keel/render/` 五个 renderer |
 | 统一的 typed lorebook schema | NovelAI / SillyTavern / KoboldAI 字段高度相似但无开放标准 | `LoreEntry` 模型 |
-| LLM 驱动的 storylet + salience + director | 学术上近乎空白（storylet 研究停在 2019 前后） | `loom/runtime/` |
+| LLM 驱动的 storylet + salience + director | 学术上近乎空白（storylet 研究停在 2019 前后） | `keel/runtime/` |
 
 ---
 
@@ -106,12 +106,12 @@
 
 ## 4. 数据模型（已实现）
 
-`loom/ir/models.py`。核心设计要点：
+`keel/ir/models.py`。核心设计要点：
 
 ### 4.1 场景节点：Genette schema，不是 beat-sheet 场景卡
 
 ```python
-class SceneNode(LoomModel):
+class SceneNode(KeelModel):
     # --- Genette《叙事话语》---
     focalizer: str            # 谁感知
     narrator: str             # 谁讲述
@@ -150,7 +150,7 @@ inclusion_group / probability / timed / match_whole_words / is_constant`。
 ### 4.3 Storylet：骨架与血肉的接缝
 
 ```python
-class Storylet(LoomModel):
+class Storylet(KeelModel):
     at_waypoint: str | None      # 挂载在哪个 waypoint；None = 全局（兜底块）
     advances_waypoint: str | None
     preconditions / effects       # QBN 的品质门控
@@ -177,7 +177,7 @@ class Storylet(LoomModel):
 
 ### 5.2 Structure Engine（结构层）
 
-结构模板 = `{ beats[], validators[], prompt_fragments }` 三件套（`loom/ir/templates.py`）。
+结构模板 = `{ beats[], validators[], prompt_fragments }` 三件套（`keel/ir/templates.py`）。
 
 **已内置 13 个模板，刻意包含彼此冲突的体系**，以证明方法论中立：
 
@@ -212,7 +212,7 @@ class Storylet(LoomModel):
 
 ### 5.4 Audit Engine（审校层）
 
-**35 个校验器 + 9 个报表项**（`loom/validators/`），每个都对应真实方法论来源，不是凭空发明的启发式：
+**35 个校验器 + 9 个报表项**（`keel/validators/`），每个都对应真实方法论来源，不是凭空发明的启发式：
 
 | 校验器 | 来源 |
 |---|---|
@@ -275,7 +275,7 @@ class Storylet(LoomModel):
 校验器崩溃、advisory 空转。
 当前：净命中 29/29，两种媒介基线上零误报，计数漂移 0，崩溃 0。
 
-### 5.5 反 slop 模块（`loom/audit/anti_slop.py`）
+### 5.5 反 slop 模块（`keel/audit/anti_slop.py`）
 
 「AI 味」不是玄学，是可量化的模式集合：否定式煽情、虚假范围、最高级堆叠、
 情绪直述、总结式升华收尾、陈词滥调、英文套话。另加三个统计指标：
@@ -320,7 +320,7 @@ CHI 2025 对 23 位编剧的深度访谈（arXiv 2502.16153）显示：
 **渲染器只负责从 IR 生成视图，绝不反向修改 IR。** 场景无 prose 时输出结构占位
 （stub）而非空文本，保证 IR ↔ 文本映射始终可追溯。
 
-### 5.8 2.0 运行时（`loom/runtime/director.py`）
+### 5.8 2.0 运行时（`keel/runtime/director.py`）
 
 **架构依据：Emily Short《Beyond Branching》(2016)。**
 
@@ -381,7 +381,7 @@ v1 方案把 Ashwell 的分支拓扑当参考，但那只回答了「分支内�
 #### 5.9.1 产品红线：不做反检测
 
 调研中必须点名的一件事：同类引擎 InkOS 提供 `revise --mode anti-detect`
-（专门的反检测改写）。**Loom 不做这个功能**，且这是**产品红线**，不是偏好。
+（专门的反检测改写）。**Keel 不做这个功能**，且这是**产品红线**，不是偏好。
 
 | | |
 |---|---|
@@ -398,14 +398,14 @@ v1 方案把 Ashwell 的分支拓扑当参考，但那只回答了「分支内�
 3. **商业上自杀。** 一旦被贴上「AI 洗稿工具」标签，起点/番茄的申诉通道、
    平台合作与《反洗稿自律公约》的生态全部关闭。
 
-**分界线**：Loom 帮作者「真的更像人写的」，不帮作者「看起来更像人写的」。
+**分界线**：Keel 帮作者「真的更像人写的」，不帮作者「看起来更像人写的」。
 前者是产品，后者是伪造。
 
 **落地方式（避免红线沦为口号）**：
 
 - 正面对替代品已实现：
-  `loom/audit/selfcheck.py`（投稿前自检，含「Loom 检不了」的显式清单）与
-  `loom/provenance/process.py`（创作过程报告，把免责证据升级为主张证据）。
+  `keel/audit/selfcheck.py`（投稿前自检，含「Keel 检不了」的显式清单）与
+  `keel/provenance/process.py`（创作过程报告，把免责证据升级为主张证据）。
 - `tests/test_redlines.py` 用 **AST** 扫描全部源码，禁止任何反检测的
   函数名 / 命令行标志 / 帮助文案。**判据落在 AST 上而不是文本搜索上**：
   文本搜索会误伤 `engines.py` 里同名的 JSON 归一化工件 `humanize`，
@@ -418,7 +418,7 @@ v1 方案把 Ashwell 的分支拓扑当参考，但那只回答了「分支内�
 ## 6. 目录结构
 
 ```
-loom/
+keel/
 ├── ir/
 │   ├── enums.py         # 全部枚举（Focalization/EnigmaState/ActantRole/ArcShape...）
 │   ├── models.py        # 三层 IR + 场景 + 台账 + 世界 + 记忆 + storylet
@@ -455,15 +455,15 @@ out/                     # demo 产物
 **CLI**
 
 ```bash
-python -m loom.cli audit      out/ir.json          # 故事体检
-python -m loom.cli render     out/ir.json -f renpy # 渲染指定媒介
-python -m loom.cli outline    out/ir.json          # 大纲（IR 层人工确认）
-python -m loom.cli lore       out/ir.json --text "沈砚掏出腰牌"
-python -m loom.cli play       out/ir.json --runs 500
-python -m loom.cli compliance out/ir.json --json out/compliance.json
-python -m loom.cli submit-check out/ir.json --json out/submit.json
-python -m loom.cli process-report out/ir.json --out out/process.md
-python -m loom.cli templates
+python -m keel.cli audit      out/ir.json          # 故事体检
+python -m keel.cli render     out/ir.json -f renpy # 渲染指定媒介
+python -m keel.cli outline    out/ir.json          # 大纲（IR 层人工确认）
+python -m keel.cli lore       out/ir.json --text "沈砚掏出腰牌"
+python -m keel.cli play       out/ir.json --runs 500
+python -m keel.cli compliance out/ir.json --json out/compliance.json
+python -m keel.cli submit-check out/ir.json --json out/submit.json
+python -m keel.cli process-report out/ir.json --out out/process.md
+python -m keel.cli templates
 ```
 
 ---
@@ -477,8 +477,8 @@ python -m loom.cli templates
 - [x] storylet 模型
 - [x] 结构模板插件机制（13 个内置模板）
 - [x] 校验器框架 + 35 个校验器 + 9 个报表项（含 SKIPPED / CRASHED 语义与覆盖率）
-- [x] 客观真值层 + 信念层（ToM）+ 张力点（`loom/ir/tom.py`）
-- [x] 提案协议（`loom/ir/proposal.py`）+ 决策遥测（`loom/provenance/telemetry.py`）
+- [x] 客观真值层 + 信念层（ToM）+ 张力点（`keel/ir/tom.py`）
+- [x] 提案协议（`keel/ir/proposal.py`）+ 决策遥测（`keel/provenance/telemetry.py`）
 - [x] IR 指纹与版本比对
 - **出口标准**：IR 能序列化/反序列化往返一致，未知字段被拒绝
 
@@ -495,7 +495,7 @@ python -m loom.cli templates
 - [x] Scripter（场景卡 → 正文，含 lore 注入 + id→名字解析 + CHANGES 自申报分流）
 - [x] Critic Loop（生成与修订分离，只自动修文风类）
 - [x] Proposer（结构类问题 → Diff 提案，**不自动应用**）
-- [x] 编排层 `LoomPipeline`（严格线性，无循环依赖；`decide()` 是提案生效的唯一入口）
+- [x] 编排层 `KeelPipeline`（严格线性，无循环依赖；`decide()` 是提案生效的唯一入口）
 - [x] 端到端验证 `scripts/pipeline_demo.py`
 - [ ] LangGraph 迁移（当前是手写编排；IR 状态已可序列化，迁移成本低）
 - [ ] 人在回路三个确认点：内核 → 节拍表 → 逐章（**均在 IR 层**）
@@ -529,16 +529,16 @@ python -m loom.cli templates
 
 ### M4 · 合规与评估（3 周）
 - [x] 溯源台账 + 合规报告
-- [x] AI 参与度计量接入生成流程（`LoomPipeline.write` 逐场写 Provenance）
+- [x] AI 参与度计量接入生成流程（`KeelPipeline.write` 逐场写 Provenance）
 - [x] 提示词与模型版本化（`prompt_version` + `model_id` 落到每个场景节点）
 - [x] **三个平台合规检测器**（爆发度 / 副词密度 / 对话节奏，走 advisory 不进健康分）
-- [x] **投稿前合规自检**（`loom.cli submit-check`：法律义务 + 平台画像 + 不可检清单）
-- [x] **创作过程报告**（`loom.cli process-report`：把免责证据升级为**主张证据**）
+- [x] **投稿前合规自检**（`keel.cli submit-check`：法律义务 + 平台画像 + 不可检清单）
+- [x] **创作过程报告**（`keel.cli process-report`：把免责证据升级为**主张证据**）
 - [x] **产品红线守卫**（`tests/test_redlines.py`：AST 扫描禁止反检测出口）
 - [ ] 内部 rubric 评估 harness
 - [ ] 奖励模型（LitBench 风格的 Bradley-Terry / 生成式 RM）
 - **出口标准**：能一键导出可提交平台的合规报告
-- **当前状态**：✅ 合规报告一键导出已达成（`loom.cli compliance`）；
+- **当前状态**：✅ 合规报告一键导出已达成（`keel.cli compliance`）；
   ✅ 另有两个更强出口：投稿前自检（`submit-check`）与创作过程报告（`process-report`）；
   ✅ 「不做反检测」已成可机检红线；
   ⏳ rubric harness 与奖励模型未做

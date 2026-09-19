@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""觉察回显（`loom/provenance/awareness.py`）单元测试。
+"""觉察回显（`keel/provenance/awareness.py`）单元测试。
 
 依据：Bhat et al., *Reactive Writers*, CHI 2026（arXiv:2603.10374）。
 作者**察觉不到** AI 对自己方向的影响，却感觉完全掌控 ——
@@ -33,11 +33,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.ir.enums import ChunkOrigin, Medium
-from loom.ir.models import NarrativeIR
-from loom.ir.proposal import Diff, DiffStatus
-from loom.pipeline.engines import CriticLoop
-from loom.provenance.awareness import (
+from keel.ir.enums import ChunkOrigin, Medium
+from keel.ir.models import NarrativeIR
+from keel.ir.proposal import Diff, DiffStatus
+from keel.pipeline.engines import CriticLoop
+from keel.provenance.awareness import (
     awareness_block,
     awareness_line,
     counts,
@@ -279,7 +279,7 @@ def test_criticloop_emits_awareness() -> None:
     如果只在 `process-report` 里出现，本测试就会红 —— 那正是
     「申诉材料」与「过程觉察」的区别所在。
     """
-    from loom.llm.mock import MockGenerator
+    from keel.llm.mock import MockGenerator
 
     ir = _mk_ir()
     try:

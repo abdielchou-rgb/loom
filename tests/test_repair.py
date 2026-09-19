@@ -1,4 +1,4 @@
-"""修复预算与冲突消解（loom.pipeline.repair）—— 测试先行，含变异验证。
+"""修复预算与冲突消解（keel.pipeline.repair）—— 测试先行，含变异验证。
 
 跑法：
     .venv/Scripts/python.exe tests/test_repair.py
@@ -21,7 +21,7 @@ glob `tests/test_*.py` 并跑，所以退出码必须诚实）。
 
 时间全部注入 `now`，不 sleep、不碰真实时钟，因此每次跑结果完全一致。
 提案一律用本地的 `P`（鸭子类型）构造，只在「与真实 `Diff` 互操作」那一节
-用真的 `loom.ir.proposal.Diff` —— 那里要验的是**终态语义复用了既有的
+用真的 `keel.ir.proposal.Diff` —— 那里要验的是**终态语义复用了既有的
 `resolve()`，而不是本模块自己实现了一套**。
 """
 
@@ -36,8 +36,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.proposal import Diff, DiffStatus, resolve  # noqa: E402
-from loom.pipeline.repair import (  # noqa: E402
+from keel.ir.proposal import Diff, DiffStatus, resolve  # noqa: E402
+from keel.pipeline.repair import (  # noqa: E402
     LENGTH_FIELDS,
     SCOPE_LENGTH,
     SCOPE_REPAIR,

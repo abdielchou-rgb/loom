@@ -10,7 +10,7 @@
 
 ── 这个模块唯一值得存在的能力 ──────────────────────────
 
-Loom 现有 24 个校验器**全部是向后看的**：你写错了什么。
+Keel 现有 24 个校验器**全部是向后看的**：你写错了什么。
 ToM 层是第一个**向前看的**结构：你接下来可以写什么。
 
 所以本测试的核心不是「检测到了一条张力」（那只是一个布尔），而是
@@ -86,7 +86,7 @@ def raises(fn) -> bool:
 
 
 def _b(prop: str, value, conf: float = 1.0, src=None):
-    from loom.ir.tom import Belief, BeliefSource
+    from keel.ir.tom import Belief, BeliefSource
 
     return Belief(
         proposition=prop,
@@ -97,7 +97,7 @@ def _b(prop: str, value, conf: float = 1.0, src=None):
 
 
 def _s(**kw):
-    from loom.ir.tom import CharacterBeliefState
+    from keel.ir.tom import CharacterBeliefState
 
     return CharacterBeliefState(**kw)
 
@@ -108,7 +108,7 @@ def _s(**kw):
 
 
 def test_belief_model(t: T) -> None:
-    from loom.ir.tom import Belief, BeliefSource
+    from keel.ir.tom import Belief, BeliefSource
 
     t.group("1. Belief / BeliefSource")
 
@@ -147,7 +147,7 @@ def test_belief_model(t: T) -> None:
 
 
 def test_dramatic_irony(t: T) -> None:
-    from loom.ir.tom import TensionType, find_dramatic_irony
+    from keel.ir.tom import TensionType, find_dramatic_irony
 
     t.group("2. 【核心】戏剧反讽：只有真值与信念不一致才成立")
 
@@ -204,7 +204,7 @@ def test_dramatic_irony(t: T) -> None:
 
 
 def _src(name: str):
-    from loom.ir.tom import BeliefSource
+    from keel.ir.tom import BeliefSource
 
     return getattr(BeliefSource, name)
 
@@ -246,7 +246,7 @@ def _scenario():
 
 
 def test_intensity_ordering(t: T) -> None:
-    from loom.ir.tom import TensionType, derive_tension_points
+    from keel.ir.tom import TensionType, derive_tension_points
 
     t.group("3. 【核心】强度序（递归错位 > 戏剧反讽 > 信念冲突）")
 
@@ -289,7 +289,7 @@ def test_intensity_ordering(t: T) -> None:
 
 
 def test_recursive_mismatch(t: T) -> None:
-    from loom.ir.tom import TensionType, derive_tension_points
+    from keel.ir.tom import TensionType, derive_tension_points
 
     t.group("4a. 递归错位：A 以为 B 相信 X，B 其实不")
 
@@ -326,7 +326,7 @@ def test_recursive_mismatch(t: T) -> None:
 
 
 def test_belief_conflict(t: T) -> None:
-    from loom.ir.tom import TensionType, derive_tension_points
+    from keel.ir.tom import TensionType, derive_tension_points
 
     t.group("4b. 信念冲突：两人对同一命题持不同值")
 
@@ -354,7 +354,7 @@ def test_belief_conflict(t: T) -> None:
 
 
 def test_secret_exposure(t: T) -> None:
-    from loom.ir.tom import TensionType, derive_tension_points
+    from keel.ir.tom import TensionType, derive_tension_points
 
     t.group("4c. 秘密暴露风险：A 以为是秘密，别人已经知情/起疑")
 
@@ -414,7 +414,7 @@ def test_secret_exposure(t: T) -> None:
 
 
 def test_goal_conflict(t: T) -> None:
-    from loom.ir.tom import TensionType, derive_tension_points
+    from keel.ir.tom import TensionType, derive_tension_points
 
     t.group("4d. 目标冲突：两个角色追同一个目标")
 
@@ -438,7 +438,7 @@ def test_goal_conflict(t: T) -> None:
 
 
 def test_every_point_carries_suggestion(t: T) -> None:
-    from loom.ir.tom import TensionPoint, TensionType, derive_tension_points
+    from keel.ir.tom import TensionPoint, TensionType, derive_tension_points
 
     t.group("5. 【核心】每个张力点都必须带走「接下来写什么」")
 
@@ -511,7 +511,7 @@ def test_every_point_carries_suggestion(t: T) -> None:
 
 
 def test_determinism_and_edges(t: T) -> None:
-    from loom.ir.tom import derive_tension_points
+    from keel.ir.tom import derive_tension_points
 
     t.group("6. 确定性与边界")
 
@@ -532,7 +532,7 @@ def test_determinism_and_edges(t: T) -> None:
         "陈默": _s(known_secrets=["没登记的命题"]),
         "沈砚": _s(world_beliefs={"没登记的命题": _b("没登记的命题", "真", 0.9)}),
     }
-    from loom.ir.tom import TensionType
+    from keel.ir.tom import TensionType
 
     pts = [
         p for p in derive_tension_points(orphan, {})

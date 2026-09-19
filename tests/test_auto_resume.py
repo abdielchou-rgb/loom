@@ -4,7 +4,7 @@
     .venv/Scripts/python.exe tests/test_auto_resume.py
 
 ── 这个测试要防的事 ────────────────────────────────────────────
-自动驾驶暂停等人，人裁决完（`loom decide`），再跑一次同一条命令续上。
+自动驾驶暂停等人，人裁决完（`keel decide`），再跑一次同一条命令续上。
 检查点里存的是**机器暂停那一刻**的 IR —— 人在那之后做的裁决不在里面。
 若续跑直接采用检查点，作者刚驳回的提案会复活成 pending，
 那次驳回连痕迹都不留。
@@ -59,8 +59,8 @@ class T:
 
 def _run(tmp: Path, **kw):
     """跑一次自动驾驶（离线桩件），返回 (result, writer)。"""
-    from loom.llm.mock import MockGenerator
-    from loom.pipeline.auto import AutoConfig, AutoWriter
+    from keel.llm.mock import MockGenerator
+    from keel.pipeline.auto import AutoConfig, AutoWriter
 
     writer = AutoWriter(
         MockGenerator(),
@@ -77,10 +77,10 @@ def _run(tmp: Path, **kw):
 
 def test_roundtrip(t: T) -> None:
     """跑一次 → 人裁决 → 从人那份续跑 → 裁决还在。"""
-    from loom.ir.models import NarrativeIR
+    from keel.ir.models import NarrativeIR
 
     t.group("1. 机器提案（离线跑一次）")
-    tmp = Path(tempfile.mkdtemp(prefix="loom_resume_"))
+    tmp = Path(tempfile.mkdtemp(prefix="keel_resume_"))
     try:
         res, _ = _run(tmp, checkpoint_dir=tmp / ".auto")
         t.ok(len(res.ir.proposals) >= 1, f"至少产生 1 条结构提案（实际 {len(res.ir.proposals)}）")
@@ -97,7 +97,7 @@ def test_roundtrip(t: T) -> None:
         t.eq(res.decisions[0]["proposed_by"], res.ir.proposals[0].source_card,
              "台账的提出方 == 提案的 source_card（派生，不是另存一份）")
 
-        t.group("2. 人类裁决（在 Loom 进程之外发生）")
+        t.group("2. 人类裁决（在 Keel 进程之外发生）")
         human_path = tmp / "human_ir.json"
         human_path.write_text(res.ir.to_json(), encoding="utf-8")
         hir = NarrativeIR.from_json(human_path.read_text(encoding="utf-8"))
@@ -136,7 +136,7 @@ def test_roundtrip(t: T) -> None:
 def test_warn_without_resume(t: T) -> None:
     """有 paused.json 却没指定 --resume-from → 必须警告，不能静默。"""
     t.group("5. 未指定 --resume-from 时的警告")
-    tmp = Path(tempfile.mkdtemp(prefix="loom_resume_warn_"))
+    tmp = Path(tempfile.mkdtemp(prefix="keel_resume_warn_"))
     try:
         ck = tmp / ".auto"
         ck.mkdir(parents=True, exist_ok=True)
@@ -152,8 +152,8 @@ def test_warn_without_resume(t: T) -> None:
 
 def test_entry_shape(t: T) -> None:
     """台账条目 = 提案的视图，两份不可能各说一套。"""
-    from loom.ir.proposal import Diff, DiffStatus
-    from loom.pipeline.auto import _decision_entries, _decided_count
+    from keel.ir.proposal import Diff, DiffStatus
+    from keel.pipeline.auto import _decision_entries, _decided_count
 
     t.group("6. 台账派生自 IR")
     d1 = Diff(id="a", target_card="scene:sc2", field="append", before=None,

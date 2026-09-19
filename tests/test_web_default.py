@@ -22,7 +22,7 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom import web  # noqa: E402
+from keel import web  # noqa: E402
 
 RESULTS: list[tuple[str, bool, str]] = []
 
@@ -117,8 +117,8 @@ def test_get_handler_catches_exception() -> None:
 def test_load_route_renders_report() -> None:
     """POST /load 收到一份合法 IR 文本，应渲染出结构体检报告页（不跑生成）。"""
     from tests.fixtures import clean_copy
-    from loom.ir.enums import Medium
-    from loom.ir.models import NarrativeIR
+    from keel.ir.enums import Medium
+    from keel.ir.models import NarrativeIR
 
     ir_json = clean_copy(Medium.NOVEL).to_json()
     h = _make_handler_instance()
@@ -139,7 +139,7 @@ def test_load_route_renders_report() -> None:
     body = h.wfile.getvalue().decode("utf-8", "replace")
     check("/load 产出 HTML 报告", "<!doctype html>" in body.lower())
     check("/load 报告含结构健康分", "结构健康分" in body)
-    check("/load 报告带回首链接", "回到 Loom 首页" in body)
+    check("/load 报告带回首链接", "回到 Keel 首页" in body)
 
 
 def test_load_route_rejects_bad_ir() -> None:

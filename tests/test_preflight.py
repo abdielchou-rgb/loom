@@ -33,14 +33,14 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import ArcShape, Severity  # noqa: E402
-from loom.ir.models import (  # noqa: E402
+from keel.ir.enums import ArcShape, Severity  # noqa: E402
+from keel.ir.models import (  # noqa: E402
     Character,
     Commitment,
     CommitmentLayer,
     NarrativeIR,
 )
-from loom.pipeline.preflight import (  # noqa: E402
+from keel.pipeline.preflight import (  # noqa: E402
     CHECK_IDS,
     PreflightError,
     assert_ready,
@@ -249,7 +249,7 @@ def test_each_check_fires_alone(t: T) -> None:
     t.ok(r.ok, "有分句、无因果标记的前提仍视为断言（不误报）")
 
     # 词表不许有重复项：重复项会让「删掉某一项」的变异测不出来。
-    from loom.pipeline import preflight as _pf
+    from keel.pipeline import preflight as _pf
 
     t.eq(
         len(_pf._EMOTION_TERMS), len(set(_pf._EMOTION_TERMS)), "情绪词表无重复项"
@@ -387,8 +387,8 @@ def test_scene_independence(t: T) -> None:
     print("\n── 7. 不读场景：计划门禁与成品校验器的分界 ──")
     # 同一份计划，场景从 0 场变成「有 3 场」，结论必须完全一致 ——
     # 本模块判的是计划，不是成品。
-    from loom.ir.enums import Focalization, SceneOutcome
-    from loom.ir.models import SceneNode, TimePoint
+    from keel.ir.enums import Focalization, SceneOutcome
+    from keel.ir.models import SceneNode, TimePoint
 
     scenes = [
         SceneNode(

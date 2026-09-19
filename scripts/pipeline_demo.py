@@ -18,25 +18,25 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.audience import (  # noqa: E402
+from keel.audience import (  # noqa: E402
     AudienceSimulator,
     BINGE_WEB_NOVEL,
     scene_signals,
 )
-from loom.audit.anti_slop import scan_ir  # noqa: E402
-from loom.ir.enums import ArcShape, Medium  # noqa: E402
-from loom.llm import MockGenerator, TokenLedger  # noqa: E402
-from loom.pipeline import LoomPipeline  # noqa: E402
-from loom.provenance.meter import ProvenanceLedger  # noqa: E402
-from loom.render import (  # noqa: E402
+from keel.audit.anti_slop import scan_ir  # noqa: E402
+from keel.ir.enums import ArcShape, Medium  # noqa: E402
+from keel.llm import MockGenerator, TokenLedger  # noqa: E402
+from keel.pipeline import KeelPipeline  # noqa: E402
+from keel.provenance.meter import ProvenanceLedger  # noqa: E402
+from keel.render import (  # noqa: E402
     render_fountain,
     render_ink,
     render_renpy,
     render_storyboard,
     render_text,
 )
-from loom.render.text import render_outline  # noqa: E402
-from loom.validators import run_all  # noqa: E402
+from keel.render.text import render_outline  # noqa: E402
+from keel.validators import run_all  # noqa: E402
 
 IDEA = (
     "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字"
@@ -62,7 +62,7 @@ def main() -> int:
     head(1, "想法 -> Narrative IR（六阶段流水线）")
     print(f"想法：{idea}")
     print()
-    pipe = LoomPipeline(gen, ledger=ledger, on_step=lambda m: print(f"  · {m}"))
+    pipe = KeelPipeline(gen, ledger=ledger, on_step=lambda m: print(f"  · {m}"))
     res = pipe.run(
         idea,
         medium=Medium.NOVEL,
@@ -128,7 +128,7 @@ def main() -> int:
     # ---------------------------------------------------------------- 6
     head(6, "A/B 对比（观众模拟的主要用法）")
     # 用同一个想法但更长的篇幅做对照 —— 检验「加内容是否等于更好」
-    ir_long = LoomPipeline(gen).run(
+    ir_long = KeelPipeline(gen).run(
         idea,
         medium=Medium.NOVEL,
         arc_shape=ArcShape.MAN_IN_A_HOLE,

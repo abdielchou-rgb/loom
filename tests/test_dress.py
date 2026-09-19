@@ -10,7 +10,7 @@
 
 ── 为什么这个模块值得存在 ──────────────────────────────
 
-Loom 现在只用「提示词版本 + `model_id` 溯源」保证风格一致 —— 记录的是
+Keel 现在只用「提示词版本 + `model_id` 溯源」保证风格一致 —— 记录的是
 文本**怎么产生的**，没有测量风格**是否真的漂移了**。
 「换了模型但风格没变」于是成为一句没有证据的宣称。
 
@@ -50,7 +50,7 @@ Loom 现在只用「提示词版本 + `model_id` 溯源」保证风格一致 —
                           deviation around the median", J. Exp. Soc. Psychol.
                           49(4), 2013 —— 中位数基线比均值稳健。
 
-  （DRESS 这个三维复合公式是 Loom 自己的构造，建立在上述来源之上；
+  （DRESS 这个三维复合公式是 Keel 自己的构造，建立在上述来源之上；
    不存在一篇叫 DRESS 的论文，这里如实标注，不虚构出处。）
 
 ── 为什么基线用「剔除 2σ 离群后的中位数」而不是均值 ──────
@@ -129,8 +129,8 @@ LONG_SENTENCE = "他慢慢地走过那条很长很长的走廊。"
 
 
 def _scene(sid: str, prose: str | None, index: int = 0):
-    from loom.ir.enums import SceneOutcome
-    from loom.ir.models import SceneNode, TimePoint
+    from keel.ir.enums import SceneOutcome
+    from keel.ir.models import SceneNode, TimePoint
 
     return SceneNode(
         id=sid,
@@ -151,8 +151,8 @@ def _scene(sid: str, prose: str | None, index: int = 0):
 
 
 def _ir(scenes):
-    from loom.ir.enums import ArcShape
-    from loom.ir.models import CommitmentLayer, NarrativeIR
+    from keel.ir.enums import ArcShape
+    from keel.ir.models import CommitmentLayer, NarrativeIR
 
     return NarrativeIR(
         title="风格漂移测试",
@@ -173,7 +173,7 @@ def _prose_ir(chapters: list[str]):
 
 def _prof(msl: float) -> "StyleProfile":
     """构造一个只有句长均值在变的档案，其余特征恒定 —— 隔离中位数逻辑。"""
-    from loom.audit.dress import StyleProfile
+    from keel.audit.dress import StyleProfile
 
     return StyleProfile(
         mean_sentence_len=msl,
@@ -191,7 +191,7 @@ def _prof(msl: float) -> "StyleProfile":
 
 
 def test_profile(t: T) -> None:
-    from loom.audit.dress import profile
+    from keel.audit.dress import profile
 
     t.group("1. profile（风格特征向量）")
 
@@ -221,7 +221,7 @@ def test_profile(t: T) -> None:
 
 
 def test_baseline(t: T) -> None:
-    from loom.audit.dress import StyleProfile, baseline
+    from keel.audit.dress import StyleProfile, baseline
 
     t.group("2. baseline（剔除 2σ 离群的中位数）")
 
@@ -256,7 +256,7 @@ def test_baseline(t: T) -> None:
 
 
 def test_style_fidelity(t: T) -> None:
-    from loom.audit.dress import baseline, profile, style_fidelity
+    from keel.audit.dress import baseline, profile, style_fidelity
 
     t.group("3. style_fidelity（风格保真度）")
 
@@ -278,7 +278,7 @@ def test_style_fidelity(t: T) -> None:
 
 
 def test_content_independence(t: T) -> None:
-    from loom.audit.dress import content_independence, profile, style_fidelity
+    from keel.audit.dress import content_independence, profile, style_fidelity
 
     t.group("4. content_independence（内容独立性：非对称是全部价值）")
 
@@ -309,7 +309,7 @@ def test_content_independence(t: T) -> None:
 
 
 def test_fluency(t: T) -> None:
-    from loom.audit.dress import fluency
+    from keel.audit.dress import fluency
 
     t.group("5. fluency（流畅度）")
 
@@ -325,7 +325,7 @@ def test_fluency(t: T) -> None:
 
 
 def test_authenticity(t: T) -> None:
-    from loom.audit.dress import AuthenticityReport, authenticity, baseline, profile
+    from keel.audit.dress import AuthenticityReport, authenticity, baseline, profile
 
     t.group("6. authenticity（三维乘积 + passed 边界）")
 
@@ -366,8 +366,8 @@ def test_authenticity(t: T) -> None:
 
 
 def test_scan_ir(t: T) -> None:
-    from loom.audit.dress import scan_ir
-    from loom.ir.enums import Severity
+    from keel.audit.dress import scan_ir
+    from keel.ir.enums import Severity
 
     t.group("7. scan_ir（跨章漂移门禁）")
 

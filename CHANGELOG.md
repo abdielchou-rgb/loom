@@ -6,7 +6,77 @@
 > 自 2026-09-18 起本仓库有 git 历史（`main` 分支），
 > 之后的条目可从提交历史核对。**这份文件不再需要靠重建维护。**
 >
-> 版本号遵循语义化版本。`loom --version` 可查当前版本。
+> 版本号遵循语义化版本。`keel --version` 可查当前版本。
+
+---
+
+## [未发布] — 2026-09-19 · 更名：Loom → 龙骨 / Keel
+
+定位：**改名，不改行为。** 这是一次纯机械的标识符替换，功能零变化。
+
+### 为什么改（冲突面是查过的，不是感觉）
+
+| 名字 | 判定 | 证据 |
+|---|---|---|
+| **Loom** | ❌ | 已被 **Atlassian 收购**（2023-11 交割）；开发圈里 "Loom" 还指 **Java Project Loom**（虚拟线程） |
+| **Fabula** | ❌ | 同赛道直接占用：`fabula.productions` 做「剧本→知识图谱」，`fabulaos.io` 自称 "AI-native OS for story development" |
+| **Textus** | ❌ | 与 `TextUs`（短信营销软件）读音完全相同 |
+
+Fabula 是最自然的选择（fabula / syuzhet 是叙事学里 IR 与文本的原始对立，
+正是本项目「IR 是本体、文本只是视图」的术语来源），但正因为贴切，
+同赛道已经挤满了。**越是精确的名字越可能已经被占。**
+
+选 **龙骨 / Keel** 的理由：吊顶与船体里那层**看不见却承重**的结构，
+精确对应「决定作品站不站得住的是正文之下那层结构」；中文母语可读，
+且未被同赛道占用。
+
+### 改名范围（全量）
+
+| | 从 | 到 |
+|---|---|---|
+| 包 | `loom/` | `keel/` |
+| 发行名 | `loom-narrative` | `keel-narrative` |
+| console script | `loom` | `keel` |
+| 启动器 | `scripts/loom.bat` / `loom.sh` | `scripts/keel.bat` / `keel.sh` |
+| 单文件包 | `loom.pyz` | `keel.pyz` |
+| 远端 | `github.com/abdielchou-rgb/loom` | `github.com/abdielchou-rgb/keel` |
+| 公开类 | `LoomModel` / `LoomPipeline` | `KeelModel` / `KeelPipeline` |
+
+**破坏性**：`import loom` → `import keel`；上述两个类名已变。
+1.0.0 尚未对外发布，故不另发大版本号。
+
+### 改名怎么做的（以及为什么这样做）
+
+先枚举**所有**含 `loom` 的标识符再替换，而不是直接上 `\b` 词边界：
+
+```
+loom 778 · Loom 535 · LoomModel 55 · LoomPipeline 40 · LOOM_PKG 4
+loom_version 3 · loom_api 3 · loom_main 2 · _loom_shim 2
+LoomHTTPRequestHandler 2 · loom_resume_ 1 · LoomLocal 1
+```
+
+`\bloom\b` 会**静默漏掉** `loom_version` / `loom_api` / `LOOM_PKG` / `_loom_shim`
+（`_` 是词字符，两侧都不构成词边界）。枚举后确认**零误伤**
+（无 `bloom` / `gloom` 之类），才用大小写敏感的全量替换。
+
+### 顺带修掉的一处过期断言
+
+`pyproject.toml` 里写着「刻意不写 Homepage：本仓库没有 git 远端」——
+这条理由在 2026-09-19 建仓之后**就不成立了**，而它会让后来者以为
+「不写 Homepage」仍是一个有效决定，从而没人去补。
+现在远端确实存在，已补上真实的 `Homepage` / `Repository` / `Issues`。
+**留一条过期的理由，比没有理由更坏。**
+
+### 验收（改名后实测）
+
+```
+scripts/verify.py          通过 86 · 失败 0
+34 个测试文件               34 / 34 全绿
+scripts/demo.py            exit 0
+scripts/pipeline_demo.py   exit 0
+scripts/check_launch.py    ALL PASS（已改为检查 `python -m keel`）
+keel.pyz                   keel 1.0.0
+```
 
 ---
 
@@ -78,15 +148,15 @@
 合规定位已按作者决策改为接受「AI 替你写」，但**溯源必须诚实** ——
 这一轮把「诚实」从态度变成字段。
 
-### 新增：自动驾驶（`loom run`）
+### 新增：自动驾驶（`keel run`）
 
 | | 改动 | 为什么 |
 |---|---|---|
-| `loom/pipeline/auto.py` | 自动推进 **IR**（不是续写文本），停止判据全部从 IR 派生 | IR 静止而文本变长 = 校验器在检查一份虚构 |
-| `loom/pipeline/preflight.py` | 起飞前体检计划（5 项） | 自主性会**放大**计划质量：坏计划 × 自动驾驶 = 很长很长的烂故事 |
-| `loom/pipeline/budget.py` | 场数 / token / 成本 / 时长四轴预算闸 | 没有预算的「一直写」是失控，不是功能 |
-| `loom/pipeline/checkpoint.py` | 原子写检查点，损坏 ≠ 不存在 | 崩在第 47 场要能从 47 续，重跑不可接受 |
-| `loom/validators/drift.py` | `drift_guard`：全局漂移/注水检测 | 现有校验器全是逐场局部的，只有它问「整体还在不在路上」 |
+| `keel/pipeline/auto.py` | 自动推进 **IR**（不是续写文本），停止判据全部从 IR 派生 | IR 静止而文本变长 = 校验器在检查一份虚构 |
+| `keel/pipeline/preflight.py` | 起飞前体检计划（5 项） | 自主性会**放大**计划质量：坏计划 × 自动驾驶 = 很长很长的烂故事 |
+| `keel/pipeline/budget.py` | 场数 / token / 成本 / 时长四轴预算闸 | 没有预算的「一直写」是失控，不是功能 |
+| `keel/pipeline/checkpoint.py` | 原子写检查点，损坏 ≠ 不存在 | 崩在第 47 场要能从 47 续，重跑不可接受 |
+| `keel/validators/drift.py` | `drift_guard`：全局漂移/注水检测 | 现有校验器全是逐场局部的，只有它问「整体还在不在路上」 |
 | 收尾型 vs 进行中破损 | `_CLOSURE_CODES` 区分二类 | 拿「到结束时兑现了吗」去判断未完稿 → 第 2 场必然误停 |
 
 ### 新增：决策留痕（主张证据）
@@ -94,9 +164,9 @@
 | | 改动 | 为什么 |
 |---|---|---|
 | `Diff.proposed_at` / `decided_at` / `decided_by` | 三个举证字段 | 一条只写着 `rejected` 的记录说不出「谁在何时驳回了它」—— 那不是证据，是主张 |
-| `loom decide` **默认写回原文件**（`--no-save` 才不落盘） | 以前只有传 `--out` 才保存 | 不落盘的裁决不是裁决：人做了判断，系统没记住 |
-| `loom run --resume-from` | 续跑采用人工修订版，**检查点让位** | 检查点存的是机器暂停那一刻的 IR，直接采用会把人的裁决无声复活成 pending |
-| `loom/clock.py` | 全项目唯一取时钟处，本地时区 + 偏移 | 举证时刻要能和文件的 mtime、平台后台时间对上；散着取会拼不成时间线 |
+| `keel decide` **默认写回原文件**（`--no-save` 才不落盘） | 以前只有传 `--out` 才保存 | 不落盘的裁决不是裁决：人做了判断，系统没记住 |
+| `keel run --resume-from` | 续跑采用人工修订版，**检查点让位** | 检查点存的是机器暂停那一刻的 IR，直接采用会把人的裁决无声复活成 pending |
+| `keel/clock.py` | 全项目唯一取时钟处，本地时区 + 偏移 | 举证时刻要能和文件的 mtime、平台后台时间对上；散着取会拼不成时间线 |
 | `DecisionRecord.decided_at` → `story_at` | 与 `Diff.decided_at` 同名不同义，已分开 | 一个是故事内标签（调参），一个是墙钟（举证）；同名必然被用错 |
 | 台账从 IR 派生 | `decisions.json` 不再另存一份状态 | 两份必然漂移，且漂移方向永远是「台账比 IR 好看」 |
 
@@ -104,15 +174,15 @@
 
 | | 改动 | 为什么 |
 |---|---|---|
-| `loom/pipeline/memory.py` | `NarrativeMemory`：场景级增量状态（谁在哪 / 知道什么 / 欠什么 / 承诺进度），记忆进 IR 可持久化、可重跑 | ConWriter（EMNLP 2026）消融：去掉动态记忆 → 0.7499，**记忆贡献大于校验**；Loom 此前缺这一层，是最大能力缺口 |
-| `loom/pipeline/repair.py` | `RepairBudget`（次数 / token / 时长硬上限）+ `Conflict` 消解：两条互斥建议记为 `conflicted` 交人裁决 | ConWriter 在 GPT-5 / 6K–12K 因「修复遵从 vs 长度控制」冲突**不收敛**；不设预算会在修复循环里烧完 token |
-| `loom/validators/transitions.py` | `state_transition_integrity`：ConWriter 的 Pre/Post/Forbidden 符号化验证，抓「死人复活」类硬冲突 | `StateDelta` 原只有 before/after，缺 `forbidden` + 前置条件校验 |
-| `scripts/verify.py` §10 | 门禁可信度自检：每门禁 ≥1 正例 + 1 反例，报 precision/recall（**诚实标注合成样本**） | ConStory-Checker ~68% 准确；Loom 此前只报「结构分 89」从不报可信度读数 |
-| `scripts/loom.bat` / `loom.sh` / `build_zipapp.py` / `loom.pyz` | 零配置启动器（双击即用，自动建 venv / 装依赖）+ 单文件 zipapp | P0 可达性：再深的门禁，第一分钟看不到 = 0 |
+| `keel/pipeline/memory.py` | `NarrativeMemory`：场景级增量状态（谁在哪 / 知道什么 / 欠什么 / 承诺进度），记忆进 IR 可持久化、可重跑 | ConWriter（EMNLP 2026）消融：去掉动态记忆 → 0.7499，**记忆贡献大于校验**；Keel 此前缺这一层，是最大能力缺口 |
+| `keel/pipeline/repair.py` | `RepairBudget`（次数 / token / 时长硬上限）+ `Conflict` 消解：两条互斥建议记为 `conflicted` 交人裁决 | ConWriter 在 GPT-5 / 6K–12K 因「修复遵从 vs 长度控制」冲突**不收敛**；不设预算会在修复循环里烧完 token |
+| `keel/validators/transitions.py` | `state_transition_integrity`：ConWriter 的 Pre/Post/Forbidden 符号化验证，抓「死人复活」类硬冲突 | `StateDelta` 原只有 before/after，缺 `forbidden` + 前置条件校验 |
+| `scripts/verify.py` §10 | 门禁可信度自检：每门禁 ≥1 正例 + 1 反例，报 precision/recall（**诚实标注合成样本**） | ConStory-Checker ~68% 准确；Keel 此前只报「结构分 89」从不报可信度读数 |
+| `scripts/keel.bat` / `keel.sh` / `build_zipapp.py` / `keel.pyz` | 零配置启动器（双击即用，自动建 venv / 装依赖）+ 单文件 zipapp | P0 可达性：再深的门禁，第一分钟看不到 = 0 |
 
 > **集成状态（诚实记录）**：`transitions.py` 已注册进校验器表（`REQUIRES` + `state_transition_integrity`），
 > 随 `run_all` 生效。但 `memory.py` / `repair.py` 本轮**只交付为库**，尚未接入
-> `LoomPipeline` / `CriticLoop` / `AutoWriter`（铁律 18：共享状态注册串行，由集成者一处完成）。
+> `KeelPipeline` / `CriticLoop` / `AutoWriter`（铁律 18：共享状态注册串行，由集成者一处完成）。
 > 它们的单元测试已通过（memory 58 / repair 149），接入是下一步独立任务，不是本轮回退。
 
 ### 已知缺陷（本轮**未修**，需单独立项）
@@ -135,14 +205,14 @@
 
 | | 改动 | 为什么 |
 |---|---|---|
-| 打包 | 新增 `pyproject.toml`，`pip install -e .` 后得到 `loom` 命令 | 以前只能 `python -m loom.cli`，等于没发布 |
-| 入口 | 新增 `loom/__main__.py`，`python -m loom` 可用 | 覆盖"不想装、只想跑"的人 |
+| 打包 | 新增 `pyproject.toml`，`pip install -e .` 后得到 `keel` 命令 | 以前只能 `python -m keel.cli`，等于没发布 |
+| 入口 | 新增 `keel/__main__.py`，`python -m keel` 可用 | 覆盖"不想装、只想跑"的人 |
 | 默认输出 | `write` 不传 `--out` 时写 `out/<想法前 40 字>/` | 以前不传 `--out` **一个文件都不写** —— 第一分钟的路是断的 |
 | 自动打开 | 跑完用默认浏览器打开 `report.html`；`--no-open` 关闭 | 报告存在但没人打开 = 等于没生成 |
-| 默认子命令 | `loom "想法"` 等价于 `loom write "想法"` | 少一步操作，多一个人用上 |
+| 默认子命令 | `keel "想法"` 等价于 `keel write "想法"` | 少一步操作，多一个人用上 |
 | 版本 | `0.2.0` → `1.0.0` | 与交付状态对齐 |
 | 文档 | 新增 `QUICKSTART.md`（5 分钟上手） | 以前新用户只能读架构文档 |
-| CLI | 新增 `--version` | 打包后的标准件；之前 `loom --version` 会报"缺少子命令" |
+| CLI | 新增 `--version` | 打包后的标准件；之前 `keel --version` 会报"缺少子命令" |
 
 默认输出目录**刻意不加时间戳**：重跑应覆盖同一份报告，不是堆副本。
 
@@ -164,10 +234,10 @@
 
 ### 本轮新增的实质能力
 
-- **`loom/render/html.py`** —— 单文件自包含 HTML 报告，无 CDN / 无外链 / 断网可看。
+- **`keel/render/html.py`** —— 单文件自包含 HTML 报告，无 CDN / 无外链 / 断网可看。
   7 个区块：结构健康分 / 评估覆盖 / 人类判断痕迹 / 叙事前提 / 体检明细 /
   非结构信号 / 待裁决提案。
-- **`loom/provenance/awareness.py`** —— 写作时的觉察回显。
+- **`keel/provenance/awareness.py`** —— 写作时的觉察回显。
   依据 CHI 2026（19 次访谈 + 1,291 次写作会话）：AI 协同写作中作者往往
   **察觉不到** AI 对自己方向的影响，却感觉完全掌控。
   `process.py` 本来就在记录判断，但只在**申诉**时导出；缺的是**写作时**可见。
@@ -175,8 +245,8 @@
 - **`premise_fidelity` 校验器** —— 结局是否兑现前提。
   依据 PLOTTER（ACL 2026 Findings）：多智能体方法在 Premise Fidelity 上只有
   40%/14%/44%，是最弱的一维。
-- **`loom/policy.py`** —— 网文正文策略门禁。
-  起点 / 番茄 / 晋江一致禁止 AI 直出正文；微短剧只要求标识。同一个 Loom，
+- **`keel/policy.py`** —— 网文正文策略门禁。
+  起点 / 番茄 / 晋江一致禁止 AI 直出正文；微短剧只要求标识。同一个 Keel，
   网文场景是违规工具、剧本场景是合规工具，所以做成**策略**而非删功能。
 - **报表项三分**：`ADVISORY`（非结构信号）/ `ADVISORY_DEFECT`（条件缺陷，
   干净输入上必须沉默）/ `ADVISORY_READOUT`（无条件测量，如 `thread_budget`）。

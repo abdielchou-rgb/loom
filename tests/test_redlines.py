@@ -1,4 +1,4 @@
-"""产品红线：Loom 不做反检测 —— **可机检**，不是一句口号。
+"""产品红线：Keel 不做反检测 —— **可机检**，不是一句口号。
 
 跑法：
     .venv/Scripts/python.exe tests/test_redlines.py
@@ -6,28 +6,28 @@
 ── 为什么需要这个文件 ─────────────────────────────────────────
 
 调研里有一个词必须点名：同类引擎 InkOS 有 `revise --mode anti-detect`
-（专门的反检测改写）。**Loom 不做这个功能**，理由三条：
+（专门的反检测改写）。**Keel 不做这个功能**，理由三条：
 
   1. 技术上必然失败 —— 检测已从词汇层转到叙事特征层。起点的维度里有
      「情感锚点偏移率」：测试者反馈「哪怕手写大纲、AI 扩写、再手动重写
      30% 关键段落，系统仍能标记超标」。**表层改写对付不了叙事层检测。**
   2. 伦理上不可辩护 —— 帮人把 AI 内容伪装成人类创作，是在对抗平台与
-     读者的知情权，与 Loom 的合规定位直接冲突。
+     读者的知情权，与 Keel 的合规定位直接冲突。
   3. 商业上自杀 —— 一旦被贴上「AI 洗稿工具」标签，平台的申诉通道、
      合作与生态全部关闭。
 
 但「我们不做」这句话**没有任何机制背书**，明天有人加一个
 `--mode anti-detect` 也不会有人拦。本文件就是那个机制。
 
-正确的替代品是 `loom/audit/selfcheck.py`（如实报告）与
-`loom/provenance/process.py`（创作过程留痕）——
-**Loom 帮作者「真的写得更好」，不帮作者「看起来像人写的」。**
+正确的替代品是 `keel/audit/selfcheck.py`（如实报告）与
+`keel/provenance/process.py`（创作过程留痕）——
+**Keel 帮作者「真的写得更好」，不帮作者「看起来像人写的」。**
 
 ── 判据落在 AST 上，不落在文本搜索上 ─────────────────────────
 
 第一版想当然地想禁词，立刻踩到两个假阳性：
 
-  * `loom/pipeline/engines.py` 里有一个**内部函数就叫 `humanize`** ——
+  * `keel/pipeline/engines.py` 里有一个**内部函数就叫 `humanize`** ——
     它是把 JSON 里的值归一成字符串的**格式化工件**，跟反检测毫无关系。
   * `anti_slop.py` 里有一整套「**去 AI 味**」的说法（得分、修订、自动修）——
     那是**质量**指标，且属于作者既定的「只自动修文风类」边界，
@@ -98,7 +98,7 @@ class T:
 
 
 def _py_files() -> list[Path]:
-    return sorted((ROOT / "loom").rglob("*.py"))
+    return sorted((ROOT / "keel").rglob("*.py"))
 
 
 def _hits(text: str) -> list[str]:
@@ -151,7 +151,7 @@ def test_identifiers(t: T) -> None:
 def test_cli_flags(t: T) -> None:
     t.group("2. CLI 没有反检测开关")
 
-    src = (ROOT / "loom" / "cli.py").read_text(encoding="utf-8")
+    src = (ROOT / "keel" / "cli.py").read_text(encoding="utf-8")
     tree = ast.parse(src)
     bad_flags: list[str] = []
     bad_help: list[str] = []
@@ -190,11 +190,11 @@ def test_thresholds_are_public(t: T) -> None:
     # （它诚实的用途是「告诉作者平台会怎么看」，那就必须让人看见），
     # 技术上也会在平台换口径的当天失效。
     # 故这里断言：词表是**明文**出现在源码里的，不是编码/加密后加载的。
-    src = (ROOT / "loom" / "audit" / "rhythm.py").read_text(encoding="utf-8")
+    src = (ROOT / "keel" / "audit" / "rhythm.py").read_text(encoding="utf-8")
     for word in ("极其", "异常", "无比"):
         t.ok(word in src, f"副词词表在源码里明文可见（{word}）")
 
-    import loom.audit.rhythm as R
+    import keel.audit.rhythm as R
 
     t.ok(
         all(isinstance(w, str) for ws in R._ADVERB_GROUPS.values() for w in ws),
@@ -232,14 +232,14 @@ def test_quality_metrics_survive(t: T) -> None:
     """
     t.group("5. 反向对照：质量向能力未被误伤")
 
-    import loom.audit.anti_slop as A
-    from loom.pipeline.engines import CriticLoop
+    import keel.audit.anti_slop as A
+    from keel.pipeline.engines import CriticLoop
 
     t.ok(hasattr(A, "scan_slop"), "anti_slop 仍在")
     t.ok(hasattr(CriticLoop, "run"), "CriticLoop 仍在（只自动修文风类）")
 
-    from loom.audit.selfcheck import pre_submit_check
-    from loom.provenance.process import build_process_report
+    from keel.audit.selfcheck import pre_submit_check
+    from keel.provenance.process import build_process_report
 
     t.ok(callable(pre_submit_check), "合规自检仍在（红线的**正面对替代品**）")
     t.ok(callable(build_process_report), "创作过程报告仍在")

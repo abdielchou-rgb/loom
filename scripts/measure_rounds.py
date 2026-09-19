@@ -5,7 +5,7 @@
 ── 为什么要这个脚本 ─────────────────────────────────────────────
 `CriticLoop` 的 `max_rounds` 默认值一直是 2，但**从来没人测过**。
 PLOTTER（ACL 2026 Findings）实测图规划是 **K=3 峰值、K=5 退化**，
-Loom 走的是同一条迭代路线，所以这个默认值不该是拍脑袋的。
+Keel 走的是同一条迭代路线，所以这个默认值不该是拍脑袋的。
 
 之前测不出结论，是因为 `MockGenerator` 的 `revise` 返回
 `{'prose': <原样>, 'changed': False}` —— 它是**设计上就不改写**的
@@ -33,10 +33,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.audit.anti_slop import scan_slop
-from loom.ir.enums import Medium
-from loom.pipeline.engines import CriticLoop
-from loom.validators import run_all
+from keel.audit.anti_slop import scan_slop
+from keel.ir.enums import Medium
+from keel.pipeline.engines import CriticLoop
+from keel.validators import run_all
 
 # （坏写法 → 好写法）。reviser 每次调用只改**一处**，
 # 模拟「LLM 一轮只修一个主要问题」这个**保守**假设。

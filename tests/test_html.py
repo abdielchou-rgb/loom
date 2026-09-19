@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""HTML 报告渲染器（`loom/render/html.py`）单元测试。
+"""HTML 报告渲染器（`keel/render/html.py`）单元测试。
 
 依据：第一性原理 D3 —— **可达性是乘数，不是加法**。
 一个到不了用户手里的判断，价值为零。已有 5 个渲染器全是文本格式，
@@ -33,9 +33,9 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from loom.ir.enums import Medium, Severity
-from loom.render.html import render_html
-from loom.validators import run_all
+from keel.ir.enums import Medium, Severity
+from keel.render.html import render_html
+from keel.validators import run_all
 
 RESULTS: list[tuple[str, bool, str]] = []
 

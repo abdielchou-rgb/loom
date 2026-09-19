@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Build a single-file `loom.pyz` executable archive using stdlib `zipapp`.
+"""Build a single-file `keel.pyz` executable archive using stdlib `zipapp`.
 
-    python scripts/build_zipapp.py     # 生成 ./loom.pyz
-    python loom.pyz --help
-    python loom.pyz web
+    python scripts/build_zipapp.py     # 生成 ./keel.pyz
+    python keel.pyz --help
+    python keel.pyz web
 
-This bundles the `loom/` package together with a tiny console shim that
-dispatches argv to `loom.cli:main`, producing one portable file.
+This bundles the `keel/` package together with a tiny console shim that
+dispatches argv to `keel.cli:main`, producing one portable file.
 
 PREREQUISITE (documented, NOT bundled):
     `pydantic` is a hard runtime dependency and cannot be auto-bundled by
@@ -15,11 +15,11 @@ PREREQUISITE (documented, NOT bundled):
     host Python. If it is missing, you get ONE LINE of setup guidance instead
     of a traceback:
 
-        Loom 需要 pydantic：请先 `pip install pydantic`
-        （或直接使用 scripts/loom.bat / scripts/loom.sh 自动配置）。
+        Keel 需要 pydantic：请先 `pip install pydantic`
+        （或直接使用 scripts/keel.bat / scripts/keel.sh 自动配置）。
 
-If you want a truly zero-setup artifact, use scripts/loom.bat (Windows) or
-scripts/loom.sh (POSIX) instead -- those create/activate the venv for you.
+If you want a truly zero-setup artifact, use scripts/keel.bat (Windows) or
+scripts/keel.sh (POSIX) instead -- those create/activate the venv for you.
 """
 
 from __future__ import annotations
@@ -30,8 +30,8 @@ import zipapp
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-LOOM_PKG = ROOT / "loom"
-OUT = ROOT / "loom.pyz"
+KEEL_PKG = ROOT / "keel"
+OUT = ROOT / "keel.pyz"
 
 # Console shim placed at the top level of the archive; `main` is the zipapp
 # entry point. It checks for pydantic first so a missing dep yields a friendly
@@ -45,13 +45,13 @@ def main():
         import pydantic  # noqa: F401  hard dependency, must come from host
     except ImportError:
         sys.stderr.write(
-            "Loom 需要 pydantic：请先 `pip install pydantic` "
-            "（或直接使用 scripts/loom.bat / scripts/loom.sh 自动配置）。\\n"
+            "Keel 需要 pydantic：请先 `pip install pydantic` "
+            "（或直接使用 scripts/keel.bat / scripts/keel.sh 自动配置）。\\n"
         )
         return 2
-    from loom.cli import main as loom_main
+    from keel.cli import main as keel_main
 
-    return loom_main()
+    return keel_main()
 
 
 if __name__ == "__main__":
@@ -60,22 +60,22 @@ if __name__ == "__main__":
 
 
 def main() -> int:
-    if not LOOM_PKG.is_dir():
-        print(f"找不到 loom 包目录：{LOOM_PKG}", file=sys.stderr)
+    if not KEEL_PKG.is_dir():
+        print(f"找不到 keel 包目录：{KEEL_PKG}", file=sys.stderr)
         return 2
 
     build_dir = ROOT / "_build_pyz"
     if build_dir.exists():
         shutil.rmtree(build_dir)
-    pkg_dest = build_dir / "loom"
-    shutil.copytree(LOOM_PKG, pkg_dest)
-    (build_dir / "_loom_shim.py").write_text(SHIM, encoding="utf-8")
+    pkg_dest = build_dir / "keel"
+    shutil.copytree(KEEL_PKG, pkg_dest)
+    (build_dir / "_keel_shim.py").write_text(SHIM, encoding="utf-8")
 
     try:
         zipapp.create_archive(
             source=build_dir,
             target=OUT,
-            main="_loom_shim:main",
+            main="_keel_shim:main",
             compressed=True,
         )
     finally:

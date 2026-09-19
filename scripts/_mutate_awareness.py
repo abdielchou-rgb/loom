@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-TARGET = ROOT / "loom" / "provenance" / "awareness.py"
+TARGET = ROOT / "keel" / "provenance" / "awareness.py"
 TEST = ROOT / "tests" / "test_awareness.py"
 
 MUTATIONS: list[tuple[str, str, str]] = [

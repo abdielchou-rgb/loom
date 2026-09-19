@@ -11,7 +11,7 @@
 
 ── 为什么这个模块值得存在 ──────────────────────────────
 
-Loom 的 Director 已有**逐 storylet** 的节奏冷却，但没有**手法/母题**层面的
+Keel 的 Director 已有**逐 storylet** 的节奏冷却，但没有**手法/母题**层面的
 冷却。后果：五个不同的 storylet 可以全是「打脸」，而没有任何校验器会发现 ——
 `outcome_distribution` 只看 yes/no/yes_but，`mao_repeat_variation` 只看
 单场之内的重复。本模块补的正是这个缺口：**生成侧的母题模式约束**。
@@ -70,7 +70,7 @@ class T:
 
 
 def test_decay(t: T) -> None:
-    from loom.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.cooldown import EventCooldownMatrix
 
     t.group("1. 指数衰减（decay ** steps）")
 
@@ -114,7 +114,7 @@ def test_decay(t: T) -> None:
 
 
 def test_record_usage(t: T) -> None:
-    from loom.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.cooldown import EventCooldownMatrix
 
     t.group("2. record_usage 累加")
 
@@ -140,7 +140,7 @@ def test_record_usage(t: T) -> None:
 
 
 def test_hot_and_recommendations(t: T) -> None:
-    from loom.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.cooldown import EventCooldownMatrix
 
     t.group("3. 热点模式与推荐（排序与阈值）")
 
@@ -188,7 +188,7 @@ def test_hot_and_recommendations(t: T) -> None:
 
 
 def test_saturation(t: T) -> None:
-    from loom.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.cooldown import EventCooldownMatrix
 
     t.group("4. check_saturation 窗口化重复")
 
@@ -232,15 +232,15 @@ def test_saturation(t: T) -> None:
 
 
 def _plain_storylet(**kw):
-    from loom.ir.models import Storylet
+    from keel.ir.models import Storylet
 
     return Storylet(id="s1", content="正文", salience=1.0, **kw)
 
 
 def test_director_backward_compat(t: T) -> None:
-    from loom.ir.models import Storylet
-    from loom.runtime.cooldown import EventCooldownMatrix
-    from loom.runtime.director import Director, RuntimeState
+    from keel.ir.models import Storylet
+    from keel.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.director import Director, RuntimeState
 
     t.group("5. 向后兼容：空 patterns 分数不变")
 
@@ -275,8 +275,8 @@ def test_director_backward_compat(t: T) -> None:
 
 
 def test_director_net_effect(t: T) -> None:
-    from loom.runtime.cooldown import EventCooldownMatrix
-    from loom.runtime.director import Director, RuntimeState
+    from keel.runtime.cooldown import EventCooldownMatrix
+    from keel.runtime.director import Director, RuntimeState
 
     t.group("6. 净效应：热模式严格降权")
 
@@ -315,8 +315,8 @@ def test_director_net_effect(t: T) -> None:
 
 
 def _minimal_ir():
-    from loom.ir.enums import ArcShape, SceneOutcome
-    from loom.ir.models import (
+    from keel.ir.enums import ArcShape, SceneOutcome
+    from keel.ir.models import (
         CommitmentLayer,
         NarrativeIR,
         SceneNode,
@@ -364,7 +364,7 @@ def _minimal_ir():
 
 
 def test_runtime_wiring(t: T) -> None:
-    from loom.runtime.director import StoryRuntime
+    from keel.runtime.director import StoryRuntime
 
     t.group("7. StoryRuntime 接线")
 

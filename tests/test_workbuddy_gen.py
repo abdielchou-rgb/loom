@@ -28,8 +28,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.llm.base import REGISTRY  # noqa: E402
-from loom.llm.workbuddy_provider import (  # noqa: E402
+from keel.llm.base import REGISTRY  # noqa: E402
+from keel.llm.workbuddy_provider import (  # noqa: E402
     PendingGeneration,
     WorkBuddyAnswerError,
     WorkBuddyGenerator,

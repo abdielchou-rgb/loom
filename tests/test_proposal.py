@@ -9,7 +9,7 @@
 
 ── 这个模块要防的是什么 ────────────────────────────────
 
-Loom 的 `CriticLoop` **自动应用**修订（目前只限文风类）。本模块把「结构类」
+Keel 的 `CriticLoop` **自动应用**修订（目前只限文风类）。本模块把「结构类」
 从「留给人决策」升级为「生成提案，人一键采纳」——铁律是
 **永不静默改写**（Æsirian `core/diff_engine.py`；原型是 Pensive 的
 "what you pin, the AI must keep"）。
@@ -91,7 +91,7 @@ def _diff(
     source: str = "biography",
     status=None,
 ):
-    from loom.ir.proposal import Diff, DiffStatus
+    from keel.ir.proposal import Diff, DiffStatus
 
     return Diff(
         id=did,
@@ -106,7 +106,7 @@ def _diff(
 
 
 def _set(*diffs):
-    from loom.ir.proposal import ProposalSet
+    from keel.ir.proposal import ProposalSet
 
     ps = ProposalSet()
     for d in diffs:
@@ -120,7 +120,7 @@ def _set(*diffs):
 
 
 def test_diff_model(t: T) -> None:
-    from loom.ir.proposal import Diff, DiffStatus
+    from keel.ir.proposal import Diff, DiffStatus
 
     t.group("1. Diff / DiffStatus")
 
@@ -189,7 +189,7 @@ def test_diff_model(t: T) -> None:
 
 
 def test_resolve(t: T) -> None:
-    from loom.ir.proposal import DiffStatus
+    from keel.ir.proposal import DiffStatus
 
     t.group("2. 裁决状态迁移")
 
@@ -224,7 +224,7 @@ def test_resolve(t: T) -> None:
 
 
 def test_double_resolve(t: T) -> None:
-    from loom.ir.proposal import DiffStatus
+    from keel.ir.proposal import DiffStatus
 
     t.group("3. 双重裁决（同向幂等 / 反向 conflicted）")
 
@@ -319,7 +319,7 @@ def test_evidence_fields(t: T) -> None:
       * **没传时刻就拒绝裁决** —— 让一个元数据字段绑架控制流。
         没有时刻的裁决仍是一次合法裁决，只是举证力弱一些。
     """
-    from loom.ir.proposal import DiffStatus
+    from keel.ir.proposal import DiffStatus
 
     t.group("5. 举证字段（时刻 / 主体）")
 

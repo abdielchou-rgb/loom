@@ -34,7 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.proposal import DiffStatus  # noqa: E402
+from keel.ir.proposal import DiffStatus  # noqa: E402
 from tests.fixtures import MUTATIONS, clean_copy  # noqa: E402
 
 
@@ -100,8 +100,8 @@ def _snapshot_without_proposals(ir) -> dict:
 
 
 def test_basic_conversion(t: T) -> None:
-    from loom.pipeline.engines import Proposer
-    from loom.validators import run_all
+    from keel.pipeline.engines import Proposer
+    from keel.validators import run_all
 
     t.group("1. 结构问题 -> 待裁决提案")
 
@@ -137,10 +137,10 @@ def test_basic_conversion(t: T) -> None:
 
 
 def test_never_silently_rewrites(t: T) -> None:
-    from loom.pipeline import LoomPipeline
-    from loom.pipeline.engines import Proposer
-    from loom.llm import MockGenerator
-    from loom.validators import run_all
+    from keel.pipeline import KeelPipeline
+    from keel.pipeline.engines import Proposer
+    from keel.llm import MockGenerator
+    from keel.validators import run_all
 
     t.group("2. 永不静默改写：产出不改，采纳也不改")
 
@@ -153,7 +153,7 @@ def test_never_silently_rewrites(t: T) -> None:
     t.eq(_snapshot_without_proposals(ir), before, "Proposer.run() 不改动任何目标字段")
 
     # 采纳 = 一个决定，不是一次应用。目标字段必须**仍然原样**。
-    pipe = LoomPipeline(MockGenerator())
+    pipe = KeelPipeline(MockGenerator())
     target = diffs[0]
     pipe.decide(ir, target.id, accept=True)
     t.eq(target.status, DiffStatus.ACCEPTED, "裁决已落到提案上")
@@ -170,8 +170,8 @@ def test_never_silently_rewrites(t: T) -> None:
 
 
 def test_idempotent(t: T) -> None:
-    from loom.pipeline.engines import Proposer
-    from loom.validators import run_all
+    from keel.pipeline.engines import Proposer
+    from keel.validators import run_all
 
     t.group("3. 幂等与确定性")
 
@@ -204,9 +204,9 @@ def test_only_structural(t: T) -> None:
     `transport:`），cognitive 产出的是不带前缀的 `cognitive_load_window`。
     原先的实现在这三条上全部漏判 —— 手写的 code 前缀表必然漂移。
     """
-    from loom.ir.enums import Severity
-    from loom.pipeline.engines import Proposer
-    from loom.validators.base import Finding, Report
+    from keel.ir.enums import Severity
+    from keel.pipeline.engines import Proposer
+    from keel.validators.base import Finding, Report
 
     t.group("4. 提案队列只装结构类问题")
 
@@ -227,7 +227,7 @@ def test_only_structural(t: T) -> None:
     t.eq(diffs[0].source_card, "validator:commitment_satisfied", "剩下的正是结构类那条")
 
     # 反向对照：如果判据换成前缀黑名单，上面那 5 条里至少有 2 条会漏进来。
-    from loom.validators import available
+    from keel.validators import available
 
     non_registered = [
         "slop:cliche",
@@ -250,16 +250,16 @@ def test_only_structural(t: T) -> None:
 
 
 def test_decide_and_telemetry(t: T) -> None:
-    from loom.llm import MockGenerator
-    from loom.pipeline import LoomPipeline
-    from loom.pipeline.engines import Proposer
-    from loom.validators import run_all
+    from keel.llm import MockGenerator
+    from keel.pipeline import KeelPipeline
+    from keel.pipeline.engines import Proposer
+    from keel.validators import run_all
 
     t.group("5. 裁决 + 决策遥测")
 
     ir = _flawed_ir()
     Proposer().run(ir, run_all(ir))
-    pipe = LoomPipeline(MockGenerator())
+    pipe = KeelPipeline(MockGenerator())
 
     t.eq(pipe.telemetry.decisions, 0, "初始零裁决")
     t.eq(pipe.telemetry.accept_rate, 0.0, "零裁决时采纳率是 0.0（不是 100%，也不抛错）")
@@ -310,16 +310,16 @@ def test_decide_and_telemetry(t: T) -> None:
 
 
 def test_decide_all_and_bad_id(t: T) -> None:
-    from loom.llm import MockGenerator
-    from loom.pipeline import LoomPipeline
-    from loom.pipeline.engines import Proposer
-    from loom.validators import run_all
+    from keel.llm import MockGenerator
+    from keel.pipeline import KeelPipeline
+    from keel.pipeline.engines import Proposer
+    from keel.validators import run_all
 
     t.group("6. 一键裁决 + 非法 id")
 
     ir = _flawed_ir()
     Proposer().run(ir, run_all(ir))
-    pipe = LoomPipeline(MockGenerator())
+    pipe = KeelPipeline(MockGenerator())
     n = len(ir.pending_proposals())
     t.ok(n > 0, f"有待裁决提案（{n} 条）")
 
@@ -345,8 +345,8 @@ def test_decide_all_and_bad_id(t: T) -> None:
 
 
 def test_cap_and_field_map(t: T) -> None:
-    from loom.pipeline.engines import _FIELD_OF, Proposer
-    from loom.validators import run_all
+    from keel.pipeline.engines import _FIELD_OF, Proposer
+    from keel.validators import run_all
 
     t.group("7. 上限与字段映射")
 
@@ -368,15 +368,15 @@ def test_cap_and_field_map(t: T) -> None:
     # CharacterBeliefState），而假失败会让人去改断言而不是改代码。
     import inspect as _inspect
 
-    from loom.ir import models as M
-    from loom.ir import proposal as P
-    from loom.ir import tom as TOM
-    from loom.ir.base import LoomModel
+    from keel.ir import models as M
+    from keel.ir import proposal as P
+    from keel.ir import tom as TOM
+    from keel.ir.base import KeelModel
 
     namespace: set[str] = set()
     for module in (M, TOM, P):
         for _, obj in _inspect.getmembers(module, _inspect.isclass):
-            if issubclass(obj, LoomModel) and obj is not LoomModel:
+            if issubclass(obj, KeelModel) and obj is not KeelModel:
                 namespace |= set(obj.model_fields)
 
     t.ok(len(namespace) > 50, f"IR 字段命名空间已扫出（{len(namespace)} 个字段名）")
@@ -394,7 +394,7 @@ def test_cap_and_field_map(t: T) -> None:
     # 覆盖率会从「30/32」掉到「30/35」并失败，而**正确的反应不是补三行
     # 永远不会用到的映射**，是承认分母取错了 —— 又是一次「手写/派生的
     # 口径要落在语义上（会不会产出提案），不是落在语法上（注没注册）」。
-    from loom.validators import REPORTS, available
+    from keel.validators import REPORTS, available
 
     gating = [c for c in available() if c not in REPORTS]
     covered = [c for c in gating if c in _FIELD_OF]
@@ -414,13 +414,13 @@ def test_cap_and_field_map(t: T) -> None:
 
 
 def test_mutation_clean_has_no_proposals(t: T) -> None:
-    from loom.pipeline.engines import Proposer
-    from loom.validators import run_all
+    from keel.pipeline.engines import Proposer
+    from keel.validators import run_all
 
     t.group("8. 变异测试：干净基线零提案")
 
     for medium in ("novel", "micro_drama"):
-        from loom.ir.enums import Medium
+        from keel.ir.enums import Medium
 
         ir = clean_copy(Medium(medium))
         diffs = Proposer().run(ir, run_all(ir))
@@ -446,8 +446,8 @@ def test_mutation_clean_has_no_proposals(t: T) -> None:
 
 
 def test_critic_loop_wiring(t: T) -> None:
-    from loom.llm import MockGenerator
-    from loom.pipeline.engines import CriticLoop
+    from keel.llm import MockGenerator
+    from keel.pipeline.engines import CriticLoop
 
     t.group("9. CriticLoop 接线")
 

@@ -10,7 +10,7 @@
 
 ── 为什么这个模块值得存在 ──────────────────────────────
 
-「读者被故事吸进去了多少」这件事，Loom 此前完全没有度量。`anti_slop`
+「读者被故事吸进去了多少」这件事，Keel 此前完全没有度量。`anti_slop`
 只惩罚「坏」（AI 味），`craft` 只惩罚「平」（张力不足），`dress` 只度量
 「漂」（风格漂移）。**没有任何一项奖励「留白」** —— 而留白恰恰是拉力的来源。
 
@@ -41,14 +41,14 @@
   即「零未解释 = 无拉力」这一反直觉结论的依据。
 
   （六个维度的**权重**没有任何引用来源，是设计先验，不是测量常数 ——
-   见 `loom/audit/transportation.py` 的 `DEFAULT_WEIGHTS`。测试只断言
+   见 `keel/audit/transportation.py` 的 `DEFAULT_WEIGHTS`。测试只断言
    权重之和为 1、以及各维度的**结构行为**，不断言「0.3 比 0.2 更正确」。）
 
 ── 期望值的算法来源 ─────────────────────────────────────
 
   句长变异系数 CV = 总体标准差 / 均值（`statistics.pstdev` / `fmean`）。
   用总体而非样本标准差：这里的「总体」就是这一段文本的全部句子，
-  不是从中抽样，无需 Bessel 修正（与 `loom/audit/dress.py` 一致）。
+  不是从中抽样，无需 Bessel 修正（与 `keel/audit/dress.py` 一致）。
 
   第 2 组的三个样本句长序列是**手工设计**的，使 CV 恰好落在带的三个位置：
       单调   lens = [3, 3, 3]        →  CV = 0.0   →  期望 30
@@ -129,8 +129,8 @@ MIX = "「你为什么要走」她问。他摸着冰凉的墙，没有回答。�
 
 
 def _scene(sid: str, prose: str | None, index: int = 0):
-    from loom.ir.enums import SceneOutcome
-    from loom.ir.models import SceneNode, TimePoint
+    from keel.ir.enums import SceneOutcome
+    from keel.ir.models import SceneNode, TimePoint
 
     return SceneNode(
         id=sid,
@@ -152,16 +152,16 @@ def _scene(sid: str, prose: str | None, index: int = 0):
 
 def _enigma(eid: str, scene_id: str, state=None):
     """挂一条谜题台账（默认 POSED —— 未解）。"""
-    from loom.ir.enums import EnigmaState
-    from loom.ir.models import Enigma
+    from keel.ir.enums import EnigmaState
+    from keel.ir.models import Enigma
 
     kw = {"state": EnigmaState.POSED} if state is None else {"state": state}
     return Enigma(id=eid, question="他为什么走", planted_at_scene=scene_id, **kw)
 
 
 def _ir(scenes, enigmas=()):
-    from loom.ir.enums import ArcShape
-    from loom.ir.models import CommitmentLayer, NarrativeIR
+    from keel.ir.enums import ArcShape
+    from keel.ir.models import CommitmentLayer, NarrativeIR
 
     return NarrativeIR(
         title="传输度测试",
@@ -183,7 +183,7 @@ def _ir(scenes, enigmas=()):
 
 
 def test_density_dims(t: T) -> None:
-    from loom.audit.transportation import (
+    from keel.audit.transportation import (
         dialogue_score,
         interruption_score,
         sensory_score,
@@ -231,7 +231,7 @@ def test_density_dims(t: T) -> None:
 
 
 def test_sentence_variety_band(t: T) -> None:
-    from loom.audit.transportation import sentence_variety_score as V
+    from keel.audit.transportation import sentence_variety_score as V
 
     t.group("2. 句长变异 —— 目标带（本模块的结构性洞察之二）")
 
@@ -269,7 +269,7 @@ def test_sentence_variety_band(t: T) -> None:
 
 
 def test_pov(t: T) -> None:
-    from loom.audit.transportation import pov_consistency_score as P
+    from keel.audit.transportation import pov_consistency_score as P
 
     t.group("3. 视角一致性（第一/第三人称混用；对话豁免）")
 
@@ -304,8 +304,8 @@ def test_pov(t: T) -> None:
 
 
 def test_unexplained(t: T) -> None:
-    from loom.audit.transportation import count_open_questions as C
-    from loom.audit.transportation import unexplained_score as U
+    from keel.audit.transportation import count_open_questions as C
+    from keel.audit.transportation import unexplained_score as U
 
     t.group("4. 未解释密度 —— 「太少未解释」也是缺陷")
 
@@ -321,7 +321,7 @@ def test_unexplained(t: T) -> None:
     t.ok(U(0) < U(5), "零未解释也低于「过剩」—— 它是带外的低点，不是最优点")
 
     # 文本侧的降级代理：只认**疑问构式**，不数「？」的个数
-    # （源项目 `open_questions` 只数问号，Loom 不抄那个 —— 这一条把它钉死）
+    # （源项目 `open_questions` 只数问号，Keel 不抄那个 —— 这一条把它钉死）
     t.eq(C("他为什么要走。"), 1, "「为什么」→ 1")
     t.eq(C("究竟是谁。为什么。"), 2, "两个疑问位置 → 2")
     t.eq(
@@ -340,7 +340,7 @@ def test_unexplained(t: T) -> None:
 
 
 def test_score(t: T) -> None:
-    from loom.audit.transportation import (
+    from keel.audit.transportation import (
         DEFAULT_WEIGHTS,
         TransportationScore,
         score,
@@ -403,8 +403,8 @@ def test_score(t: T) -> None:
 
 
 def test_scan_ir(t: T) -> None:
-    from loom.audit.transportation import scan_ir
-    from loom.ir.enums import EnigmaState, Severity
+    from keel.audit.transportation import scan_ir
+    from keel.ir.enums import EnigmaState, Severity
 
     t.group("6. scan_ir（IR 门禁；未解问题取自 Enigma 台账）")
 

@@ -54,7 +54,7 @@ class T:
 
 
 def _base_ir():
-    from loom.ir.models import Medium
+    from keel.ir.models import Medium
     from tests.fixtures import clean_copy
 
     return clean_copy(Medium.NOVEL)
@@ -62,7 +62,7 @@ def _base_ir():
 
 def _rejected(ir, n: int = 1, prefix: str = "j") -> None:
     """往 IR 里塞 n 条**已驳回**的提案。"""
-    from loom.ir.proposal import Diff, DiffStatus
+    from keel.ir.proposal import Diff, DiffStatus
 
     for i in range(n):
         ir.proposals.append(
@@ -85,8 +85,8 @@ def _rejected(ir, n: int = 1, prefix: str = "j") -> None:
 
 
 def test_evidence_strength(t: T) -> None:
-    from loom.ir.proposal import Diff, DiffStatus
-    from loom.provenance.process import build_process_report
+    from keel.ir.proposal import Diff, DiffStatus
+    from keel.provenance.process import build_process_report
 
     t.group("1. 证据强度（诚实评估，不是保证）")
 
@@ -143,8 +143,8 @@ def test_evidence_strength(t: T) -> None:
 
 
 def test_pending_is_not_evidence(t: T) -> None:
-    from loom.ir.proposal import Diff, DiffStatus
-    from loom.provenance.process import build_process_report
+    from keel.ir.proposal import Diff, DiffStatus
+    from keel.provenance.process import build_process_report
 
     t.group("2. 待裁决不构成证据")
 
@@ -179,9 +179,9 @@ def test_pending_is_not_evidence(t: T) -> None:
 
 
 def test_ir_only(t: T) -> None:
-    from loom.ir.models import NarrativeIR
-    from loom.ir.proposal import DiffStatus
-    from loom.provenance.process import build_process_report
+    from keel.ir.models import NarrativeIR
+    from keel.ir.proposal import DiffStatus
+    from keel.provenance.process import build_process_report
 
     t.group("3. 仅凭 IR 就能重建报告")
 
@@ -202,7 +202,7 @@ def test_ir_only(t: T) -> None:
 
 
 def test_gaps_in_every_export(t: T) -> None:
-    from loom.provenance.process import GAPS, build_process_report
+    from keel.provenance.process import GAPS, build_process_report
 
     t.group("4. 缺口声明出现在每一种导出里")
 
@@ -231,8 +231,8 @@ def test_gaps_in_every_export(t: T) -> None:
 
 
 def test_scene_ownership(t: T) -> None:
-    from loom.ir.enums import ChunkOrigin
-    from loom.provenance.process import build_process_report
+    from keel.ir.enums import ChunkOrigin
+    from keel.provenance.process import build_process_report
 
     t.group("5. 场景归属")
 

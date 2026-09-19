@@ -10,7 +10,7 @@
 本集合是**合成 / 构造**出来的，不是真实故事分布的采样。
 它的用途是**校验器之间的相对比较**（谁的 precision/recall 更可信），
 **不构成绝对准确率**。外部证据（ConStory-Checker 等）显示自动一致性
-检查器约 ~68% 准确；Loom 此前只报「结构分 89」而从不报 precision/recall，
+检查器约 ~68% 准确；Keel 此前只报「结构分 89」而从不报 precision/recall，
 这一节把可信度读数补上。
 
 ## 构造方式
@@ -31,8 +31,8 @@
 
 from __future__ import annotations
 
-from loom.ir.enums import Medium
-from loom.validators.base import REPORTS, REQUIRES
+from keel.ir.enums import Medium
+from keel.validators.base import REPORTS, REQUIRES
 from tests.fixtures import MUTATIONS, clean_copy
 
 #: 门禁 code = REQUIRES 中、且不在 REPORTS 里的 code（数量从 registry_stats 派生）。

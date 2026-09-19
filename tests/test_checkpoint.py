@@ -1,4 +1,4 @@
-"""自主运行检查点（`loom/pipeline/checkpoint.py`）的单元测试。
+"""自主运行检查点（`keel/pipeline/checkpoint.py`）的单元测试。
 
 跑法：
     .venv/Scripts/python.exe tests/test_checkpoint.py
@@ -34,14 +34,14 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import ArcShape, Medium, SceneOutcome  # noqa: E402
-from loom.ir.models import (  # noqa: E402
+from keel.ir.enums import ArcShape, Medium, SceneOutcome  # noqa: E402
+from keel.ir.models import (  # noqa: E402
     CommitmentLayer,
     NarrativeIR,
     SceneNode,
     TimePoint,
 )
-from loom.pipeline import checkpoint as cp  # noqa: E402
+from keel.pipeline import checkpoint as cp  # noqa: E402
 
 _IDEA_A = "一个校对员发现自己的批注正在改写现实"
 _IDEA_B = "一位雪山的渡口守夜人清点旧账"

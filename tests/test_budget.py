@@ -1,4 +1,4 @@
-"""预算闸门（loom.pipeline.budget）—— 测试先行，含变异验证。
+"""预算闸门（keel.pipeline.budget）—— 测试先行，含变异验证。
 
 跑法：
     .venv/Scripts/python.exe tests/test_budget.py
@@ -35,7 +35,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.pipeline.budget import (  # noqa: E402
+from keel.pipeline.budget import (  # noqa: E402
     Budget,
     BudgetExceeded,
     Usage,

@@ -1,4 +1,4 @@
-"""全局漂移门禁（`loom/validators/drift.py`）的单元测试（含变异测试）。
+"""全局漂移门禁（`keel/validators/drift.py`）的单元测试（含变异测试）。
 
 跑法：
     .venv/Scripts/python.exe tests/test_drift.py
@@ -30,8 +30,8 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import ArcShape, SceneOutcome, Severity  # noqa: E402
-from loom.ir.models import (  # noqa: E402
+from keel.ir.enums import ArcShape, SceneOutcome, Severity  # noqa: E402
+from keel.ir.models import (  # noqa: E402
     Commitment,
     CommitmentLayer,
     NarrativeIR,
@@ -39,8 +39,8 @@ from loom.ir.models import (  # noqa: E402
     StateDelta,
     TimePoint,
 )
-from loom.validators import drift  # noqa: E402
-from loom.validators.drift import drift_guard  # noqa: E402
+from keel.validators import drift  # noqa: E402
+from keel.validators.drift import drift_guard  # noqa: E402
 
 
 class T:
@@ -414,7 +414,7 @@ def test_contract(t: T) -> None:
     #   断言它没被注册是为了防止代理越界改共享表。注册完成后该断言必须翻转，
     #   否则它会永远挡着「已注册」这个正确状态。）
     t.ok("@register" in src, "模块已 @register（集成方已完成注册）")
-    from loom.validators.base import REQUIRES, available
+    from keel.validators.base import REQUIRES, available
 
     t.ok("drift_guard" in available(), "drift_guard 已进入 registry")
     t.ok(

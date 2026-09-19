@@ -1,6 +1,6 @@
 """校验器 fixture 库 —— 正例基线 + 反例变异。
 
-**为什么需要这个文件**：在此之前，Loom 的 24 个校验器一个 fixture 都没有。
+**为什么需要这个文件**：在此之前，Keel 的 24 个校验器一个 fixture 都没有。
 `scripts/demo.py` 里「健康分 35/100」只证明了校验器**会报警**，
 没证明它**报得对**，更没证明它对干净文本**不误报**。
 「24 个校验器全绿」是一个没有证据支撑的宣称。
@@ -44,7 +44,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Callable
 
-from loom.ir.enums import (
+from keel.ir.enums import (
     ActantRole,
     ArcShape,
     ChunkOrigin,
@@ -54,7 +54,7 @@ from loom.ir.enums import (
     SceneOutcome,
     Severity,
 )
-from loom.ir.models import (
+from keel.ir.models import (
     ActantBinding,
     NarrativeIR,
     Precondition,
@@ -97,10 +97,10 @@ def build_clean_ir(medium: Medium = Medium.NOVEL) -> NarrativeIR:
     if medium in _CACHE:
         return _CACHE[medium]
 
-    from loom.llm import MockGenerator
-    from loom.pipeline import LoomPipeline
+    from keel.llm import MockGenerator
+    from keel.pipeline import KeelPipeline
 
-    ir = LoomPipeline(MockGenerator()).run(
+    ir = KeelPipeline(MockGenerator()).run(
         _IDEA,
         medium=medium,
         arc_shape=ArcShape.MAN_IN_A_HOLE,
@@ -175,7 +175,7 @@ def _seed_narrative_layers(ir: NarrativeIR) -> None:
     与后半程场景的结构字段**天然重叠**（基线是一个「锚被兑现了」的故事），
     而不是放宽门禁判据。
     """
-    from loom.ir.tom import Belief, BeliefSource, CharacterBeliefState
+    from keel.ir.tom import Belief, BeliefSource, CharacterBeliefState
 
     scenes = ir.ordered_scenes()
     if not scenes:
@@ -433,7 +433,7 @@ def _m_premise(ir: NarrativeIR) -> None:
 
     依据：PLOTTER（ACL 2026 Findings）实测图规划在 Premise Fidelity 上
     只有 40% / 14% / 44% 的胜率，**图的迭代精炼会偏离原初前提**。
-    Loom 走的是同一条路线（`CriticLoop` 迭代修订），所以这条必须有反例。
+    Keel 走的是同一条路线（`CriticLoop` 迭代修订），所以这条必须有反例。
 
     两处一起打，是因为判据本来就是「两处**同时**失锚才 WARN」：
     只改一处只会得到 INFO，升不到 WARN —— 那正是这个 fixture 要区分的东西。
@@ -508,7 +508,7 @@ def _m_branch_consistency(ir: NarrativeIR) -> None:
     可能世界共享该点的全部事实；若两分支对同一实体设了互斥状态，读者走完
     两条线会抓到吃书。本变异是互动叙事（Ink / Ren'Py）最核心的结构缺陷形态。
     """
-    from loom.validators.branches import Branch, attach_branches
+    from keel.validators.branches import Branch, attach_branches
 
     if not ir.characters.characters:
         return

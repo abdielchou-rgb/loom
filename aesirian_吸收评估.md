@@ -1,7 +1,7 @@
 # Æsirian 吸收评估
 
 > 评估对象：`D:\Claude\projects\aesirian`（Æsirian — ToM-driven Human-AI Collaborative Fiction Engine）
-> 评估目的：判定其中哪些设计值得 Loom 吸收，哪些明确不要碰
+> 评估目的：判定其中哪些设计值得 Keel 吸收，哪些明确不要碰
 > 评估方式：源码通读（core/ 约 1.9 万行 Python）+ 设计文档交叉验证（蓝图 44KB、V3 战略、自我审计）
 > 日期：2026-09-14
 
@@ -16,7 +16,7 @@ CHANGES 自申报协议、递归 ToM 的张力生成、事件冷却矩阵、以�
 
 两者定位有实质差异，不是同类产品：
 
-| | Æsirian | Loom |
+| | Æsirian | Keel |
 |---|---|---|
 | 命题 | 叙事是「作者意图 → 文本介质 → 读者体验」三极的**全息协同** | 叙事是**可编译的中间表示**（Idea → IR → Renderers） |
 | 产物 | 长篇小说（Markdown / EPUB） | IR 本体 + 5 种媒介视图（小说 / 剧本 / 分镜 / Ink / Ren'Py） |
@@ -26,7 +26,7 @@ CHANGES 自申报协议、递归 ToM 的张力生成、事件冷却矩阵、以�
 | 测试 | 109 pytest + 门禁自证样本库 | 2 个端到端脚本（离线确定性） |
 
 **结论：不是「谁抄谁」，是两套互补的资产。** Æsirian 在「长篇一致性」这一个维度上比我深得多；
-Loom 在「结构可移植 + 多媒介 + 2.0 运行时」上是它完全没有的。下面的清单只收真正能补我短板的。
+Keel 在「结构可移植 + 多媒介 + 2.0 运行时」上是它完全没有的。下面的清单只收真正能补我短板的。
 
 ---
 
@@ -50,13 +50,13 @@ G0 门禁校验声明的格式与完整性，G1–G5 用「**声明 vs 文本提
 3. **声明与文本矛盾时以 KG 为准 —— 防止 AI 虚构声明。**
    声明只是**提示通道**，提取/KG 才是**真值通道**。这条是整套协议的安全阀。
 
-**为什么 Loom 缺**：
-Loom 的 `StructureEngine` 在**场景卡层**产出 `state_deltas`，然后 `Scripter` 据此写正文。
+**为什么 Keel 缺**：
+Keel 的 `StructureEngine` 在**场景卡层**产出 `state_deltas`，然后 `Scripter` 据此写正文。
 **但没有任何机制检查正文是否真的做了场景卡说的那件事。** 这是当前架构里最大的一处
 「说一套写一套」漏洞 —— 结构体检 92 分，但正文可能一场戏都没兑现。
 
-**落到 Loom 哪**：
-- 新增 `loom/llm/prompts.py` 的 `CHANGES` 提示词（第 7 个版本化提示词）
+**落到 Keel 哪**：
+- 新增 `keel/llm/prompts.py` 的 `CHANGES` 提示词（第 7 个版本化提示词）
 - `Scripter.run()` 返回值从 `str` 改为 `(prose, declaration)`；或在 `Scripter` 后加一个
   `DeclarationParser`（复用 `_repair_json` 的修复思路）
 - 新增校验器 `declaration_consistency`：对比声明的 `state_deltas` 与场景卡的 `state_deltas`，
@@ -93,30 +93,30 @@ TensionType = 信念冲突 / 戏剧反讽 / 递归错位 / 秘密暴露风险 / 
    > 「制造一场 A 和 B 争论 X 的场景」
    > 「让 A 基于错误的认知做出行动 —— 读者会替 ta 着急」
 
-   这与 Loom 所有校验器的立场相反：Loom 的 24 个校验器全部是**向后看的**
+   这与 Keel 所有校验器的立场相反：Keel 的 24 个校验器全部是**向后看的**
    （你写错了什么），ToM 是**向前看的**（你接下来可以写什么）。
-   Loom 的 enigma ledger 追踪「问题」，ToM 追踪「信念分歧」—— 后者是丰富得多的生成源。
+   Keel 的 enigma ledger 追踪「问题」，ToM 追踪「信念分歧」—— 后者是丰富得多的生成源。
    递归错位的张力被赋 0.9（最高），信念冲突按两者置信度均值，戏剧反讽固定 0.8。
 
-2. **戏剧反讽需要「客观真值层」，而 Loom 完全没有这一层。**
+2. **戏剧反讽需要「客观真值层」，而 Keel 完全没有这一层。**
    `get_dramatic_irony(reader_knowledge)` 拿角色的 `world_beliefs` 与
    `engine.reader_knowledge`（客观真相字典）比对，输出「读者知道 X，但 A 以为 Y」。
 
-   Loom 的 `KnowledgeFact.known_by` 只是「谁在第几天知道」的映射，
-   **没有真值可比**。这意味着 Loom 结构上无法表达戏剧反讽 —— 而这是最基础的悬念机制之一。
+   Keel 的 `KnowledgeFact.known_by` 只是「谁在第几天知道」的映射，
+   **没有真值可比**。这意味着 Keel 结构上无法表达戏剧反讽 —— 而这是最基础的悬念机制之一。
 
-**为什么 Loom 缺**：Loom 的 L2 角色层有 `want/need/flaw/goals/states`，
+**为什么 Keel 缺**：Keel 的 L2 角色层有 `want/need/flaw/goals/states`，
 `CharacterState.knows` 是一个 id 列表。没有命题、没有置信度、没有来源、没有嵌套。
 
-**落到 Loom 哪**：
-- 新增 `loom/ir/tom.py`：`Belief` / `BeliefSource` / `CharacterBeliefState` /
+**落到 Keel 哪**：
+- 新增 `keel/ir/tom.py`：`Belief` / `BeliefSource` / `CharacterBeliefState` /
   `TensionPoint`（pydantic，`extra="forbid"`，与 IR 一致）
 - `Character` 增加 `beliefs: list[Belief]`；`NarrativeIR` 增加 `objective_truth: dict[str, Any]`
   （真值层）与 `tension_points: list[TensionPoint]`
 - 新增校验器：`belief_consistency`（角色行为 vs 信念）、`dramatic_irony_available`（提示可用反讽点）、
   `secret_reveal_ordering`（秘密揭示顺序）
-- **新增生成器**：`loom/pipeline/engines.py` 加 `TensionSeeder` —— 从场景骨架自动派生
-  可用的张力点，喂给 `StructureEngine` 作为下一轮约束。这是 Loom 第一个「向前看」的引擎。
+- **新增生成器**：`keel/pipeline/engines.py` 加 `TensionSeeder` —— 从场景骨架自动派生
+  可用的张力点，喂给 `StructureEngine` 作为下一轮约束。这是 Keel 第一个「向前看」的引擎。
 
 **成本**：高（新数据层 + 2 个校验器 + 1 个引擎）。
 **风险**：中 —— 需要设计 `objective_truth` 从哪来（建议：由 `PremiseEngine` 的
@@ -151,16 +151,16 @@ get_recommendations(3)           → 冷却值最低的 3 个（该用了）
 check_saturation(window=5, threshold=0.6) → 「模式 X 在过去 5 章出现 4 次（80%）」
 ```
 
-**为什么 Loom 缺**：
-Loom 的 `Director.score()` 有**每个 storylet 的**冷却惩罚，但没有**工艺设备层面**的冷却。
+**为什么 Keel 缺**：
+Keel 的 `Director.score()` 有**每个 storylet 的**冷却惩罚，但没有**工艺设备层面**的冷却。
 后果：5 个不同的 storylet 可以全是「打脸」，`outcome_distribution` 校验器看不出问题
 （它只看 yes/no/yes_but 分布），`mao_repeat_variation` 只在单场景内查重复。
 
-**这是 Loom 唯一一个「生成侧」缺失的约束**：Loom 的 Director 只做选择（在合法块里挑），
+**这是 Keel 唯一一个「生成侧」缺失的约束**：Keel 的 Director 只做选择（在合法块里挑），
 不做**模式层面的降权**。加上它，Director 就同时受「弧光对齐」和「模式冷却」两个约束。
 
-**落到 Loom 哪**：
-- 新增 `loom/runtime/cooldown.py`：`EventCooldownMatrix`（纯 Python，无依赖）
+**落到 Keel 哪**：
+- 新增 `keel/runtime/cooldown.py`：`EventCooldownMatrix`（纯 Python，无依赖）
 - `Storylet` 增加 `patterns: list[str]` 字段（声明这个块用了哪些工艺设备）
 - `Director.score()` 加入 `-cooldown_penalty * matrix.get_cooldown(pattern)`
 - `StoryRuntime.advance_waypoint()` 里调 `matrix.advance_time()`
@@ -171,13 +171,13 @@ Loom 的 `Director.score()` 有**每个 storylet 的**冷却惩罚，但没有**
 **风险**：极低 —— 纯加法，不影响现有路径。
 
 **顺带吸收**：`check_saturation()` 的**窗口化重复检测**思路。
-Loom 的校验器全部是「全篇统计」，缺「最近 N 场」的窗口视角。
+Keel 的校验器全部是「全篇统计」，缺「最近 N 场」的窗口视角。
 
 ---
 
-### ④ 门禁治理三件套 —— Loom 这一层是薄的 ★高价值、低成本
+### ④ 门禁治理三件套 —— Keel 这一层是薄的 ★高价值、低成本
 
-Æsirian 在这一层踩过的坑，Loom 正在踩（我这次会话就踩了其中一个）。
+Æsirian 在这一层踩过的坑，Keel 正在踩（我这次会话就踩了其中一个）。
 
 **(a) registry 单一真源 + 从签名派生 schema**
 
@@ -197,7 +197,7 @@ GATE_FAMILIES = dict(Counter(gid.split("-")[0] for gid in GATE_CATALOG))
 配套测试 `test_gate_registry_consistency.py` **用正则扫描 README / user-guide /
 attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都必须等于 registry 计数。**
 
-> **Loom 已经踩了这个坑**：本次会话我写的 README 与 ENGINEERING_PLAN 都写「16 个校验器」，
+> **Keel 已经踩了这个坑**：本次会话我写的 README 与 ENGINEERING_PLAN 都写「16 个校验器」，
 > 实际是 24 个。Æsirian 用一条测试永久性地消灭了这类漂移。这条测试值得直接抄。
 
 **(b) SKIPPED ≠ PASS**
@@ -206,8 +206,8 @@ attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都
 （如 `"SVT-01": ("entry_value", "exit_value")`）。单章缺字段 → **SKIPPED**
 （`passed=True, skipped=True`），而不是静默通过。
 
-> Loom 现状：校验器拿不到数据时返回 `[]`，**与「检查通过」在返回值上完全不可区分**。
-> `Report` 里没有 `skipped` 计数。这意味着「24 个校验器全过」这句话在 Loom 里可能
+> Keel 现状：校验器拿不到数据时返回 `[]`，**与「检查通过」在返回值上完全不可区分**。
+> `Report` 里没有 `skipped` 计数。这意味着「24 个校验器全过」这句话在 Keel 里可能
 > 只是「大部分校验器没数据可查」。**这是一个真实的、现在就在骗自己的指标。**
 
 **(c) 噪声降噪（NOISE_GATES）**
@@ -215,7 +215,7 @@ attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都
 23 道装饰性门禁 + `_denoise_for_short_chapter()`：短章（<2000 字）把 WARN 降为 INFO。
 治理效果：干净文本的 ch1 从 **2 BLOCK → 0 BLOCK**。
 
-> Loom 的 `CriticLoop` 已经做对了一半（只自动修文风类，结构类留人决策），
+> Keel 的 `CriticLoop` 已经做对了一半（只自动修文风类，结构类留人决策），
 > 但没有按篇幅/上下文做严重度降噪。
 
 **(d) 死门禁静态检测**
@@ -225,13 +225,13 @@ attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都
 并实际跑 `run_full` 检测「静默假通过」。
 
 > 这是为了修一个真实事故：23 道「registry 有、dispatcher 无」的死门禁。
-> Loom 的 `@register` 装饰器结构上更好（不会出现注册了却没实现），
+> Keel 的 `@register` 装饰器结构上更好（不会出现注册了却没实现），
 > 但**「校验器被调用了吗」这个断言仍然值得加**。
 
-**落到 Loom 哪**：
-- `loom/validators/base.py`：`Finding` 加 `skipped: bool`；`Report` 加 `skipped` 计数与
+**落到 Keel 哪**：
+- `keel/validators/base.py`：`Finding` 加 `skipped: bool`；`Report` 加 `skipped` 计数与
   `skipped_codes` 属性；`score()` 不计 SKIPPED
-- 新增 `loom/validators/base.py::registry_stats()` → `{total, by_severity, by_module}`
+- 新增 `keel/validators/base.py::registry_stats()` → `{total, by_severity, by_module}`
 - 新增 `tests/test_registry_drift.py`：扫 README / ENGINEERING_PLAN 的「N 个校验器」，断言等于 registry
 - 新增 `tests/test_validators_live.py`：对每个 code 跑一遍，断言不是「全部返回空」
 - 新增 `tests/test_validator_fixtures.py`：正反例 fixture（见 ⑤）
@@ -240,7 +240,7 @@ attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都
 
 ---
 
-### ⑤ 净命中率验证口径 —— Loom 的校验器从来没被验证过 ★高价值
+### ⑤ 净命中率验证口径 —— Keel 的校验器从来没被验证过 ★高价值
 
 **是什么**（`tools/gate_verification/` + `docs/gate-verification-report.md`）：
 
@@ -259,12 +259,12 @@ attribution / api_server / mcp_server / dashboard，任何「NNN 道门禁」都
 报告**诚实列出 12 例零净命中** —— 时间线 / 身份 / 空间 / 事实 / 称谓矛盾，
 即 167 道规则门禁**完全没覆盖**的那一类。这个诚实的负面结果直接催生了 ⑥。
 
-**为什么 Loom 缺**：
-Loom 有 24 个校验器，**一个 fixture 都没有**。`scripts/demo.py` 里的「健康分 35/100」
+**为什么 Keel 缺**：
+Keel 有 24 个校验器，**一个 fixture 都没有**。`scripts/demo.py` 里的「健康分 35/100」
 只证明了校验器**会报警**，没证明它**报得对**（也没证明它对干净文本不误报）。
 「24 个校验器全绿」目前是一个没有证据支撑的宣称。
 
-**落到 Loom 哪**：
+**落到 Keel 哪**：
 - 新增 `tests/fixtures/validators/`：每个校验器至少 1 正例 + 1 反例
 - 新增 `tests/test_validator_precision.py`：
   - 断言 `examples/demo_story.py` 的**故意干净部分** FP = 0
@@ -294,23 +294,23 @@ Loom 有 24 个校验器，**一个 fixture 都没有**。`scripts/demo.py` 里�
 - 逐句切分后再扫（避免跨句错误配对）
 - 文件头明写「**刻意保守…误报治理优先**」
 
-**为什么 Loom 缺**：
-Loom 的 `consistency.py` 有 `knowledge_matrix` / `revelation_regression` /
+**为什么 Keel 缺**：
+Keel 的 `consistency.py` 有 `knowledge_matrix` / `revelation_regression` /
 `timeline_monotonic` / `world_rule_violation`，但**没有任何数值事实比对**。
 长篇最常见的吃书形态之一就是数值矛盾（年龄、时长、楼层、编号），
 而这类矛盾恰恰是**纯规则能 100% 抓准**的 —— 不需要语义理解。
 
-**落到 Loom 哪**：
-- 新增 `loom/audit/numeric_facts.py`：`chinese_numeral_to_int()` + `scan_numeric_facts()` +
-  `find_cross_scene_conflicts()`（Loom 的「章」= 场景）
+**落到 Keel 哪**：
+- 新增 `keel/audit/numeric_facts.py`：`chinese_numeral_to_int()` + `scan_numeric_facts()` +
+  `find_cross_scene_conflicts()`（Keel 的「章」= 场景）
 - 新增校验器 `numeric_fact_conflict`（severity=ERROR）
 - 新增 IR 字段：`NarrativeIR.numeric_facts: list[NumericFact]`（供增量比对与溯源）
 
 **成本**：低（一个自包含模块 + 一个校验器）。**风险**：低。
 
 **一个改进**：Æsirian 的抽取器靠正则 + 后缀黑名单，仍然脆弱。
-Loom 有 IR，**场景卡的 `state_deltas` 已经结构化地记录了数值变化** ——
-所以 Loom 可以做得更实：优先用 IR 里的结构化事实，正则抽取只作为**兜底通道**
+Keel 有 IR，**场景卡的 `state_deltas` 已经结构化地记录了数值变化** ——
+所以 Keel 可以做得更实：优先用 IR 里的结构化事实，正则抽取只作为**兜底通道**
 （正好是 CHANGES 协议的「双通道」思路）。
 
 ---
@@ -350,21 +350,21 @@ Diff{ id, target_card, field, before, after, rationale, source_card,
 > 「把『diff 接受率 / 拒绝率 / 来源→去向分布』变成可查数据，供周级门禁/产品调参
 > （避免靠感觉判断『作者是否信任 AI 提案』）」
 
-**为什么 Loom 缺**：
-- Loom 的 L2 有 `want/need/flaw/arc_from/arc_to`，**但没有 `wound` 和 `lie`**。
+**为什么 Keel 缺**：
+- Keel 的 L2 有 `want/need/flaw/arc_from/arc_to`，**但没有 `wound` 和 `lie`**。
   `flaw` 近似 `lie` 但不是一回事 —— **lie 是一个「角色信以为真的命题」**，
   因此可以对着 ToM 信念图做一致性校验。这是从「形容角色」到「可验证角色」的升级。
-- Loom 的 `CriticLoop` **自动应用**修订（虽然只限文风类）。
+- Keel 的 `CriticLoop` **自动应用**修订（虽然只限文风类）。
   Æsirian 的铁律是「永不静默改写」+ 提案 + 遥测。
-  两者可以合并：**Loom 保留「只自动修文风类」的边界，但把「结构类」从
+  两者可以合并：**Keel 保留「只自动修文风类」的边界，但把「结构类」从
   『留给人决策』升级为『生成 Diff 提案给人一键采纳』，并记录采纳率。**
 
-**落到 Loom 哪**：
+**落到 Keel 哪**：
 - `Character` 增加 `wound: str` 与 `lie: str`；`arc_to` 语义改为「高潮时放弃或死守这个 lie」
-- 新增 `loom/ir/proposal.py`：`Diff` + `DiffStatus` + `ProposalSet`
-- 新增 `loom/pipeline/engines.py::Proposer`：结构类问题产出 Diff 提案（不自动应用）
+- 新增 `keel/ir/proposal.py`：`Diff` + `DiffStatus` + `ProposalSet`
+- 新增 `keel/pipeline/engines.py::Proposer`：结构类问题产出 Diff 提案（不自动应用）
 - `CriticLoop` 返回值加 `proposals: list[Diff]`
-- 新增 `loom/provenance/telemetry.py`：采纳率埋点（与现有 provenance 台账同源）
+- 新增 `keel/provenance/telemetry.py`：采纳率埋点（与现有 provenance 台账同源）
 - 新增校验器 `lie_arc_closure`：高潮是否真的处理了这个 lie
 
 **成本**：中。**风险**：中低（需要产品决策：UI 上如何呈现提案）。
@@ -383,14 +383,14 @@ pov_switch ×4   time_jump ×2   location_change ×2   new_character ×3   flash
 累计成本 > 12 → 警告「可能让读者感到困惑」
 ```
 
-**Loom 的 hazard 模型是「逐场无记忆」的，Æsirian 这个是「窗口累加」的。**
-两者互补：Loom 抓「这一场本身弱」，它抓「这一串操作即使每场都不弱，合起来也会压垮读者」。
+**Keel 的 hazard 模型是「逐场无记忆」的，Æsirian 这个是「窗口累加」的。**
+两者互补：Keel 抓「这一场本身弱」，它抓「这一串操作即使每场都不弱，合起来也会压垮读者」。
 
 **值得抄的是「窗口累加」这个结构**，不是那几个具体权重（那些是断言，没有引用来源）。
-Loom 的 `SceneNode` 已有 `focalizer` / `fabula_time` / `location`，**可以直接算**：
+Keel 的 `SceneNode` 已有 `focalizer` / `fabula_time` / `location`，**可以直接算**：
 换聚焦者、时间跳变、地点变化、新角色登场 —— 全部可从 IR 派生，零额外 LLM 调用。
 
-**落到 Loom**：`loom/audience/signals.py` 加 `cognitive_load` 维度；
+**落到 Keel**：`keel/audience/signals.py` 加 `cognitive_load` 维度；
 `AudienceSimulator` 的 hazard 加一个「最近 3 场累计负荷」项。
 
 ---
@@ -407,40 +407,40 @@ Loom 的 `SceneNode` 已有 `focalizer` / `fabula_time` / `location`，**可以�
 1. **「太少未解释」也是错的。**
    `unexplained_count == 0` → 得分 30，注释写「完全没未解释 = too clean」。
    这是一个反直觉但正确的工艺洞察：**一切都当场解释清楚的故事没有拉力。**
-   Loom 的 `anti_slop` 只惩罚「坏」，不奖励「留白」。
+   Keel 的 `anti_slop` 只惩罚「坏」，不奖励「留白」。
 
 2. **目标带（target band）而非单调指标。**
    `sentence_variety = 100 - |CV − 0.7| × 100` —— 变异系数 0.7 最好，
    太低（单调）和太高（杂乱）都扣分。
-   Loom 的 `anti_slop` 有句长 CV 但没有目标带。
+   Keel 的 `anti_slop` 有句长 CV 但没有目标带。
 
 **不抄**：那 6 个权重（写死为「学术加权公式」但无引用）、感官词表（20 个词太粗）、
 `open_questions`（只是数「？」的个数，不是台账）。
 
 ---
 
-### ⑩ 四个工艺检测器（Loom 完全没有）
+### ⑩ 四个工艺检测器（Keel 完全没有）
 
-| 检测器 | 理论来源 | 检测什么 | Loom 现状 |
+| 检测器 | 理论来源 | 检测什么 | Keel 现状 |
 |---|---|---|---|
 | `micro_tension.py` | Maass《Writing the Breakout Novel》 | 段落级张力信号密度（攥紧/屏住/僵住/警觉…）；张力与平淡混同（自我抵消） | 无 |
 | `control_illusion.py` | Peter Storr | 6 规则：因果解释延迟 / 模式中断 / 视角跳变 / 信息超载 / 无回报 / 细节缺失 | 无 |
 | `reality_effect.py` | Barthes 现实效应 | 抽象名词密度 vs 感官具体名词密度，输出具体化建议 | 无 |
 | `show_dont_tell.py` | 展示不告知 | 情绪「告诉」词（他很生气）→ 检查邻近有无生理/动作信号（攥紧/青筋/拍桌） | 只在 `PROSE` 提示词里写了，**无检测器** |
-| `ai_tell_detector.py` | InkOS 4 条确定性规则 | 段落均匀度 CV<0.15 / 模糊词密度>3‰ / 过渡词≥3 次 / 连续 3 句同头 | ≈ Loom `anti_slop` |
+| `ai_tell_detector.py` | InkOS 4 条确定性规则 | 段落均匀度 CV<0.15 / 模糊词密度>3‰ / 过渡词≥3 次 / 连续 3 句同头 | ≈ Keel `anti_slop` |
 
 **最值得抄的是 `show_dont_tell.py` 的「否定式豁免」逻辑**：
 检测到「他很生气」后，先看文本里有没有 `SHOW_SIGNALS["愤怒"] = [攥紧, 青筋, 拍桌, 摔, 咬紧, 涨红, 瞪着]`，
 **有就不算违规**。这是「检测 + 豁免」而非「纯命中」—— 大幅降低误报。
-Loom 的 `anti_slop` 是纯命中式的。
+Keel 的 `anti_slop` 是纯命中式的。
 
-**落到 Loom**：新增 `loom/audit/craft.py`，4 个检测器（`micro_tension` / `control_illusion` /
+**落到 Keel**：新增 `keel/audit/craft.py`，4 个检测器（`micro_tension` / `control_illusion` /
 `reality_effect` / `show_dont_tell`），每个约 60–80 行，复用 `anti_slop` 的
 `SlopHit` / `SlopReport` 结构。**成本低，收益明确。**
 
 > **✅ 已落地（2026-09-14）。** 实际 915 行（其中代码 701 行、注释 61、空行 153）——
 > 超出 60–80 行/个的估算，超出部分主要是中文工艺词表与「已知局限」文档。
-> 接入点**不是**门禁 registry，而是**照 `anti_slop` 的先例**接入 `loom/cli.py`
+> 接入点**不是**门禁 registry，而是**照 `anti_slop` 的先例**接入 `keel/cli.py`
 > 的 `audit` 命令（`report.add(*scan_craft_ir(ir))`）。理由见 §八。
 > 关键验收：`show_dont_tell` 的豁免逻辑经**变异测试**证明是承重的
 > （掐掉 `_find_show_signal` 后，「有呈现信号的直述」立刻从 0 条变成 1 条 finding）。
@@ -458,7 +458,7 @@ passed = overall >= 1 - threshold        # 默认 threshold = 0.15
 「风格保真度」如果只是因为内容没变才保持，那它毫无意义。
 基线用多章**中位数聚合**并剔除 2σ 离群（比均值稳健）。
 
-Loom 现在只靠**提示词版本化 + `model_id` 溯源**来保证风格一致，没有任何**度量**。
+Keel 现在只靠**提示词版本化 + `model_id` 溯源**来保证风格一致，没有任何**度量**。
 抄这个能补上「换模型后风格是否真的漂了」这个可测问题。
 
 **不抄**：`fingerprint.py`（2028 行）里大量已死的东西 ——
@@ -477,15 +477,15 @@ Loom 现在只靠**提示词版本化 + `model_id` 溯源**来保证风格一致
 `Node` 有 `is_provisional` / `provisional_confidence` / `is_enriched` / `graduated_at`
 （临时节点 → 丰富 → 毕业），来自 SAGA 的「临时节点生命周期」。
 
-Loom 的 `Relation` 只有 `{src, dst, kind, polarity, note}`，**没有时间维度**。
-「他们第 12 章还是朋友，第 30 章反目」在 Loom 里无法表达，只能覆盖原关系。
+Keel 的 `Relation` 只有 `{src, dst, kind, polarity, note}`，**没有时间维度**。
+「他们第 12 章还是朋友，第 30 章反目」在 Keel 里无法表达，只能覆盖原关系。
 `CharacterState` 有时间维度，但 `Relation` 没有 —— 这是一个真实的不对称。
 
-**落到 Loom**：`Relation` 增加 `valid_from_day` / `valid_to_day`；
+**落到 Keel**：`Relation` 增加 `valid_from_day` / `valid_to_day`；
 `Character.state_at(day)` 已有，`StoryBible.relations_at(day)` 照抄这个模式。
 
 **不抄**：`FactSnapshot`（把角色状态/关系/物品持有者/派系平衡打成每章快照）——
-内存开销大且与 Loom 的 `CharacterState` 时间线重复。
+内存开销大且与 Keel 的 `CharacterState` 时间线重复。
 
 ---
 
@@ -494,14 +494,14 @@ Loom 的 `Relation` 只有 `{src, dst, kind, polarity, note}`，**没有时间�
 | 项 | 为什么不要 |
 |---|---|
 | **167 道「工艺门禁」的具体内容** | 大量是关键词计数 + 硬阈值，且入参常是**派生代理量**而非真语义（`PLE-01` 传 `int(tp//2)`、`G3-05` 传 `gd > 0`）。Æsirian 自己的自证报告承认**时间/空间/身份/事实类矛盾 0/12 检出**。密度不等于深度。 |
-| **手写 `ALL_GATES` 字典 + 143 分支 `safe_eval` 上帝函数** | 两处维护、必然漂移（他们自己写了 `test_gate_dead_dispatch` 来抓漂移，说明问题真实存在）。Loom 的 `@register` 装饰器结构上更优，不要倒退。 |
+| **手写 `ALL_GATES` 字典 + 143 分支 `safe_eval` 上帝函数** | 两处维护、必然漂移（他们自己写了 `test_gate_dead_dispatch` 来抓漂移，说明问题真实存在）。Keel 的 `@register` 装饰器结构上更优，不要倒退。 |
 | **`validate_action` 的 80 词 `non_character_words` 黑名单** | 上游 NER 失败的下游补丁。正确做法是修实体抽取，不是在验证器里堆黑名单。 |
 | **`advance_chapter` 的信念置信度衰减** | 「超过 50 章后 ×0.95」在语义上错误：读者不遗忘，角色也不该因章节数增加而降低对既定事实的置信度。会产生虚假 `is_erroneous` 信号。 |
 | **读者模型的文本抽取正则** | `re.findall(r"在([^，。]{1,10})[，。]", text)` 取地点 —— 「在」是最高频汉字之一，必然产出垃圾。`char_mentions = r"([一-鿿]{2,3})(?:说\|想\|看\|走\|笑\|哭\|站)"` 同理。 |
-| **`open_questions` 作为悬念台账** | 它只是数「？」的个数（`len(question_markers) > len(open_questions)` 就 append 一条「第 N 章出现的新问题」）。Loom 的 `Enigma` 状态机（posed→delayed→partial→resolved→abandoned）严格优于它。 |
+| **`open_questions` 作为悬念台账** | 它只是数「？」的个数（`len(question_markers) > len(open_questions)` 就 append 一条「第 N 章出现的新问题」）。Keel 的 `Enigma` 状态机（posed→delayed→partial→resolved→abandoned）严格优于它。 |
 | **`TransportationScore` 的 6 个权重** | 注释写「学术加权公式」但无任何引用来源，权重是断言的。可以抄「目标带」和「太少未解释也是错」这两个**结构性洞察**，不要抄数字。 |
 | **`fingerprint.py` 的 `NarrativeFingerprint`** | 5 个字段永远是 0.0（无赋值）；2 处 import 指向不存在的模块，被 `except Exception: pass` 吞掉。这是静默失败的教科书案例。 |
-| **四卡的具体字段命名** | `FrameworkBeat` / `ChapterBeat` 与 Loom 的 `PlotLayer` / `SceneNode` 语义重叠。抄「锚 + 不对称传播」的**机制**，不要抄一套并行的数据结构。 |
+| **四卡的具体字段命名** | `FrameworkBeat` / `ChapterBeat` 与 Keel 的 `PlotLayer` / `SceneNode` 语义重叠。抄「锚 + 不对称传播」的**机制**，不要抄一套并行的数据结构。 |
 | **`mcp_server.py`（旧）与 `llm_engine.py`（旧）** | Æsirian 自己的审计判定为「新旧双轨并存」的技术债，旧路径仍在生产链路里。不要参考。 |
 
 ---
@@ -521,15 +521,15 @@ Loom 的 `Relation` 只有 `{src, dst, kind, polarity, note}`，**没有时间�
 `attribution.md` §5 明写：**「Apache-2.0 与 AGPL 不兼容混用」**。
 `engineering-plan-github-020.md` 把这件事列为 🔴 合规级问题。
 
-**对 Loom 的含义**：
+**对 Keel 的含义**：
 - **可以吸收的**：`core/wenjian/` 的**工程模式** —— registry 单一真源、SKIPPED 语义、
   NOISE 降噪、净命中率验证口径。这些是通用工程思想，不受版权保护。
 - **不要吸收的**：具体门禁的**文本/词表/阈值**（尤其 `webnovel-pleasure-zh.md` 这类
   craft 知识文件与 `gates/*.py` 里的词表）—— 它们可能携带 InkOS 的 AGPL 传染性。
-  Loom 的 24 个校验器**必须自己从方法论原著推导**（这也正是 Loom 现有做法：每个校验器
+  Keel 的 24 个校验器**必须自己从方法论原著推导**（这也正是 Keel 现有做法：每个校验器
   的 docstring 标注 McKee / Todorov / Barthes / Genette / 李渔 等真实出处）。
 
-### ② 引用完整性 —— Æsirian 自己做得不够，Loom 要做得更好
+### ② 引用完整性 —— Æsirian 自己做得不够，Keel 要做得更好
 
 Æsirian 的 `attribution.md` **遗漏**了：
 - **SAGA**（知识图谱项目）—— 在 `reference_notes/absorbed_patterns.md` 里自述借鉴了
@@ -542,9 +542,9 @@ Loom 的 `Relation` 只有 `{src, dst, kind, polarity, note}`，**没有时间�
   Greimas / Todorov / Genette / Booker / Polti / Pixar / Dan Harmon / Yorke / Egri / Netflix …）
   —— 这些只存在于内部文档，**未进入对外版权声明**。
 
-**对 Loom 的含义**：如果 Loom 吸收上述任何一项，必须在
+**对 Keel 的含义**：如果 Keel 吸收上述任何一项，必须在
 `docs/attribution.md`（或 ENGINEERING_PLAN 的引用章节）里逐条标注来源。
-Loom 现有的做法（每个校验器 docstring 标出处）是对的，继续沿用并扩展到新模块。
+Keel 现有的做法（每个校验器 docstring 标出处）是对的，继续沿用并扩展到新模块。
 
 ### ③ AIGC 标识
 
@@ -552,20 +552,20 @@ Loom 现有的做法（每个校验器 docstring 标出处）是对的，继续�
 （`Label: "1"` + `ContentProducer: 001191440300708461136T1XGW03` + `ProduceID` / `PropagateID`），
 属中国 AIGC 内容标识体系，公开前计划剥离。
 
-**对 Loom 的含义**：Loom 的 `Provenance` + `ProvenanceLedger` + 合规报告
-（`loom.cli compliance`）在这一点上**已经比 Æsirian 完整** ——
-Loom 有逐场景的 AI 占比计量与 `OK/CAUTION/BLOCKED` 判定，
+**对 Keel 的含义**：Keel 的 `Provenance` + `ProvenanceLedger` + 合规报告
+（`keel.cli compliance`）在这一点上**已经比 Æsirian 完整** ——
+Keel 有逐场景的 AI 占比计量与 `OK/CAUTION/BLOCKED` 判定，
 Æsirian 只有文档级水印，没有产品级的 AI 参与度计量。
-**这一项 Loom 保持领先，不需要吸收。**
+**这一项 Keel 保持领先，不需要吸收。**
 
 ### ④ 值得注意的空白：Æsirian 从未点名中国平台
 
 全库检索（`起点|番茄|墨狐|蜜巢|SillyTavern|阅文|晋江|七猫|掌阅`）在 `.py` 与 `.md` 中
 **零命中** —— 中国平台一律以「平台侧工具」「网文行业经验」泛称。
 
-而 Loom 的 ENGINEERING_PLAN 已经写明了：
+而 Keel 的 ENGINEERING_PLAN 已经写明了：
 《微短剧发展管理办法》（广电总局令第 16 号）2026-09-01 施行、起点 2026-08-18
-AI 占比 >10% 撤榜。**Loom 在这一块的具体度是它的优势，保持。**
+AI 占比 >10% 撤榜。**Keel 在这一块的具体度是它的优势，保持。**
 
 ---
 
@@ -577,11 +577,11 @@ AI 占比 >10% 撤榜。**Loom 在这一块的具体度是它的优势，保持�
 
 1. ✅ **门禁治理三件套**（④）—— `skipped` 语义 + `registry_stats()` + 文档漂移测试 +
    校验器 live 测试。**已实现，并扩展为「报表项 vs 门禁项」的机检分类。**
-2. ✅ **事件冷却矩阵**（③）—— `loom/runtime/cooldown.py`（143 行）+
+2. ✅ **事件冷却矩阵**（③）—— `keel/runtime/cooldown.py`（143 行）+
    `Storylet.patterns` 字段 + `Director.score()` 一处改动。
-   补上 Loom 唯一缺失的「生成侧模式约束」。**向后兼容已证明**：
+   补上 Keel 唯一缺失的「生成侧模式约束」。**向后兼容已证明**：
    `patterns` 为空时分数逐位相同（`0.9 == 0.9`）。
-3. ✅ **CSN 数值事实一致性**（⑥）—— `loom/audit/csn.py`（267 行）+ 门禁项
+3. ✅ **CSN 数值事实一致性**（⑥）—— `keel/audit/csn.py`（267 行）+ 门禁项
    `numeric_fact_consistency`。数值矛盾是纯规则能 100% 抓准的，性价比最高。
 
 4. ✅ **净命中率验证口径 + fixture 库**（⑤）—— **已实现**（24 个反例，
@@ -589,29 +589,29 @@ AI 占比 >10% 撤榜。**Loom 在这一块的具体度是它的优势，保持�
 
 ### 第二批（需要设计决策，价值高）—— ①⑦ 已落地 ✅
 
-5. ✅ **CHANGES 自申报协议**（①）—— 补上 Loom 架构里最大的漂移漏洞
-   （结构说 A、正文写 B）。落地为 `loom/llm/declaration.py`（`Declaration` 数据结构）
+5. ✅ **CHANGES 自申报协议**（①）—— 补上 Keel 架构里最大的漂移漏洞
+   （结构说 A、正文写 B）。落地为 `keel/llm/declaration.py`（`Declaration` 数据结构）
    + 提示词 `changes@changes.v1` + 门禁项 `declaration_consistency`。
    **降级策略的答案**：声明缺失时**不判定**（SKIPPED），而不是判定为「无漂移」——
    自申报是模型的自愿行为，拿不到声明就说「没漂移」等于把沉默当成合格。
 6. ✅ **四卡锚机制 + Diff 提案 + 遥测**（⑦）—— `wound` / `lie` 两个字段进入
    `Character`（提示词 `characters.v3`），让角色变得**可验证**；
    `ir.proposals` + `Diff` 状态机（`pending/accepted/rejected/conflicted`）承载提案；
-   `loom/provenance/telemetry.py` 记录裁决遥测。**UI 呈现问题被绕开了，不是被解决了**：
+   `keel/provenance/telemetry.py` 记录裁决遥测。**UI 呈现问题被绕开了，不是被解决了**：
    `cli.py proposals` / `decide` 是命令行出口，产品级呈现仍待决策（见 §13.5）。
 
 ### 第三批（大工程，明确收益后再做）—— ② 已落地 ✅
 
 7. ✅ **递归 ToM + 客观真值层**（②）—— 按建议的路径做的：先落 `objective_truth`
-   与 `Belief` / `CharacterBeliefState`（`loom/ir/tom.py`），再上全量 ToM。
+   与 `Belief` / `CharacterBeliefState`（`keel/ir/tom.py`），再上全量 ToM。
    现在**递归三层也做了**（`RECURSIVE_MISMATCH` 是 `TensionType` 的一档），
    但 `TensionSeeder` 默认**不播种递归信念** —— 递归信念需要作者显式声明，
    播种器替作者发明一层「我以为他以为」是在制造自己的反例。
-8. ✅ **认知负荷窗口累加**（⑧）—— `loom/audience/cognitive.py`，
+8. ✅ **认知负荷窗口累加**（⑧）—— `keel/audience/cognitive.py`，
    `windowed_loads()` 是唯一的累加实现（`scan_ir` 与它共用，不重写第二份），
    `window=1` 退化为逐场负荷、作为与 `hazard` 对比的基线。
-   ✅ **工艺检测器四件套**（⑩）—— `loom/audit/craft.py`（915 行）。
-   ✅ **DRESS 风格漂移**（⑪）—— `loom/audit/dress.py`（产 `audit:style_drift`）。
+   ✅ **工艺检测器四件套**（⑩）—— `keel/audit/craft.py`（915 行）。
+   ✅ **DRESS 风格漂移**（⑪）—— `keel/audit/dress.py`（产 `audit:style_drift`）。
    ✅ **Relation 时间维度**（⑫）—— 门禁项 `relation_temporal`。
    **第三批至此全部落地。**
 
@@ -620,7 +620,7 @@ AI 占比 >10% 撤榜。**Loom 在这一块的具体度是它的优势，保持�
 ## 七、落地记录：④⑤ 实现后的实测结果
 
 写方案和真跑一遍是两件事。④⑤ 落地后，fixture 库**第一次运行就抓到了五个
-真缺陷**——其中三个是「Loom 正在骗自己」的那一类：
+真缺陷**——其中三个是「Keel 正在骗自己」的那一类：
 
 | # | 缺陷 | 性质 |
 |---|---|---|
@@ -630,7 +630,7 @@ AI 占比 >10% 撤榜。**Loom 在这一块的具体度是它的优势，保持�
 | 4 | 桩件把 emotion 写死成与 `arc_shape` 无关的上升直线 | 自相矛盾：流水线过不了自己的校验器 |
 | 5 | 三个函数源码里根本没有 WARN/ERROR，却被算进「24 个校验器」 | 虚报覆盖：**正是我在 Æsirian 167 道门禁上批评过的问题** |
 
-第 5 条值得停一下：**我在评估里批评 Æsirian 的门禁数量虚高，结果 Loom 自己
+第 5 条值得停一下：**我在评估里批评 Æsirian 的门禁数量虚高，结果 Keel 自己
 有 3/24 是永远不会失败的。** 这个同构错误是 fixture 库抓出来的，不是我自己
 想出来的 —— 这就是为什么「验证口径」本身要工程化。
 
@@ -672,9 +672,9 @@ registry 完整性        24 个 code 全部声明了数据需求
 
 | 项 | 产物 | 验证 |
 |---|---|---|
-| ③ 事件冷却矩阵 | `loom/runtime/cooldown.py`（143 行）+ `Storylet.patterns` + `Director.score()` | `tests/test_cooldown.py` 45 断言；**向后兼容逐位相同** |
-| ⑥ CSN 数值事实 | `loom/audit/csn.py`（267 行）+ 门禁 `numeric_fact_consistency` | `tests/test_csn.py` 64 断言；净命中 22/22 |
-| ⑩ 四个工艺检测器 | `loom/audit/craft.py`（915 行）+ `cli.py` 接入 | `tests/test_craft.py` 75 断言；豁免逻辑经变异测试 |
+| ③ 事件冷却矩阵 | `keel/runtime/cooldown.py`（143 行）+ `Storylet.patterns` + `Director.score()` | `tests/test_cooldown.py` 45 断言；**向后兼容逐位相同** |
+| ⑥ CSN 数值事实 | `keel/audit/csn.py`（267 行）+ 门禁 `numeric_fact_consistency` | `tests/test_csn.py` 64 断言；净命中 22/22 |
+| ⑩ 四个工艺检测器 | `keel/audit/craft.py`（915 行）+ `cli.py` 接入 | `tests/test_craft.py` 75 断言；豁免逻辑经变异测试 |
 
 合计新增单元测试 **184 项断言**，`scripts/verify.py` 从 20 项升到 **24 项**断言全过。
 
@@ -682,10 +682,10 @@ registry 完整性        24 个 code 全部声明了数据需求
 
 `ultrawork` 这个触发词的实质是**并行代理模式**。但并行派发的前提是
 「任务之间**没有共享状态**」——先做了文件所有权分析，结论是：
-**只有 ③ 与 ⑩ 两个域是真正独立的**（前者只碰 `loom/runtime/` + 一个 IR 字段，
-后者只碰 `loom/audit/` 新文件）。
+**只有 ③ 与 ⑩ 两个域是真正独立的**（前者只碰 `keel/runtime/` + 一个 IR 字段，
+后者只碰 `keel/audit/` 新文件）。
 
-其余项**不能并行**，因为它们都碰 `loom/ir/models.py`（①⑦⑫）或
+其余项**不能并行**，因为它们都碰 `keel/ir/models.py`（①⑦⑫）或
 **共享门禁治理状态**（`REQUIRES` 表 + fixture 库 + 文档计数）。
 后者的冲突是致命的：两个代理同时改 `tests/fixtures.py` 与文档计数，
 合并结果会互相覆盖，而这类错误**不会被任何测试抓到**（因为每个代理各自跑都是绿的）。
@@ -730,18 +730,18 @@ registry 完整性        24 个 code 全部声明了数据需求
 ## 九、落地记录（三）：两个「向前看」的引擎
 
 这一轮把评估里价值最高、也是最后剩下的两块补完了：**①②⑦**（以及顺带收尾的 ⑧⑩⑪⑫）。
-至此 §六 的三批清单**全部落地**，Loom 的门禁不再是清一色向后看。
+至此 §六 的三批清单**全部落地**，Keel 的门禁不再是清一色向后看。
 
 ### 做了什么
 
 | 项 | 产物 | 验证 |
 |---|---|---|
-| ① CHANGES 自申报 | `loom/llm/declaration.py` + 提示词 `changes@changes.v1` + 门禁 `declaration_consistency` | 反例 fixture + `verify.py` 净命中；声明缺失 → SKIPPED 由 `REQUIRES` 表声明 |
-| ② 客观真值层 + ToM | `loom/ir/tom.py`（`Belief` / `CharacterBeliefState` / `TensionPoint` / `derive_tension_points`）+ 门禁 `belief_consistency` / `secret_reveal_ordering` / `lie_arc_closure` / `dramatic_irony_available` | `tests/test_tom.py` 69 断言 |
-| ⑦ 四卡锚 + Diff 提案 + 遥测 | `Character.wound` / `Character.lie` + 提示词 `characters.v3`；`loom/ir/proposal.py` 状态机；`ir.proposals` / `accept_proposal` / `reject_proposal`；`loom/provenance/telemetry.py` | `tests/test_proposer.py` 116 断言 + `tests/test_telemetry.py` 43 断言 |
+| ① CHANGES 自申报 | `keel/llm/declaration.py` + 提示词 `changes@changes.v1` + 门禁 `declaration_consistency` | 反例 fixture + `verify.py` 净命中；声明缺失 → SKIPPED 由 `REQUIRES` 表声明 |
+| ② 客观真值层 + ToM | `keel/ir/tom.py`（`Belief` / `CharacterBeliefState` / `TensionPoint` / `derive_tension_points`）+ 门禁 `belief_consistency` / `secret_reveal_ordering` / `lie_arc_closure` / `dramatic_irony_available` | `tests/test_tom.py` 69 断言 |
+| ⑦ 四卡锚 + Diff 提案 + 遥测 | `Character.wound` / `Character.lie` + 提示词 `characters.v3`；`keel/ir/proposal.py` 状态机；`ir.proposals` / `accept_proposal` / `reject_proposal`；`keel/provenance/telemetry.py` | `tests/test_proposer.py` 116 断言 + `tests/test_telemetry.py` 43 断言 |
 | **② 的引擎化** | `TensionSeeder`（流水线第 8 阶段，**向前看**） | `tests/test_tension.py` 55 断言 |
 | **⑦ 的引擎化** | `Proposer`（`CriticLoop` 尾部产出待裁决提案，**不自动应用**） | 同上 |
-| ⑪ DRESS | `loom/audit/dress.py`（`audit:style_drift`） | `tests/test_dress.py` 61 断言 |
+| ⑪ DRESS | `keel/audit/dress.py`（`audit:style_drift`） | `tests/test_dress.py` 61 断言 |
 | ⑫ Relation 时间维度 | 门禁 `relation_temporal` | 反例 fixture + `verify.py` 净命中 |
 
 本轮**新增三个测试文件**（`tests/test_tension.py` 55 + `test_proposer.py` 116 +
@@ -844,11 +844,11 @@ scripts/verify.py     45/45 断言
 > Æsirian 值得抄的不是它的门禁数量，而是**四个「向前看」的机制**：
 > CHANGES 让 AI 自证、ToM 把信念分歧变成可写场景、冷却矩阵告诉下一个该用什么模式、
 > Diff 提案让作者的信任变成可测量数据。
-> Loom 在补完这一轮之前的门禁**全部是向后看的** —— 这是两套系统最本质的差距，
+> Keel 在补完这一轮之前的门禁**全部是向后看的** —— 这是两套系统最本质的差距，
 > 也是「帮你写」和「和你想」的分界。
 >
 > 补充（④⑤ 落地后）：**「向后看」这件事本身也需要被验证。**
-> Loom 的门禁在实现 ④⑤ 之前，有 1 个判据数学上不可满足、
+> Keel 的门禁在实现 ④⑤ 之前，有 1 个判据数学上不可满足、
 > 1 个判据选错了统计量、3 个根本不会失败却计入了数量。
 > 门禁的可信度不是靠方法论的引用撑起来的，是靠**净命中率**撑起来的。
 >

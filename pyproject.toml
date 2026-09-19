@@ -3,13 +3,13 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "loom-narrative"
+name = "keel-narrative"
 version = "1.0.0"
-description = "Loom 叙事编译器 —— 剧本/微短剧的结构体检与合规自检"
+description = "Keel 叙事编译器 —— 剧本/微短剧的结构体检与合规自检"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
-authors = [{ name = "Loom" }]
+authors = [{ name = "Keel" }]
 keywords = [
     "narrative",
     "screenplay",
@@ -28,26 +28,32 @@ classifiers = [
 ]
 
 # 唯一硬依赖。llm 相关（litellm）全部是**可选**且**懒加载**的 ——
-# 见 loom/llm/litellm_provider.py：未安装时模块可导入但不实例化。
+# 见 keel/llm/litellm_provider.py：未安装时模块可导入但不实例化。
 # 这条是产品约束，不是偷懒：无 API key 也必须能端到端跑通（项目铁律 6）。
 dependencies = ["pydantic>=2.9,<3"]
 
 [project.optional-dependencies]
-# 想接真实模型时装这个：pip install "loom-narrative[llm]"
+# 想接真实模型时装这个：pip install "keel-narrative[llm]"
 llm = ["litellm>=1.40"]
 dev = ["pytest>=8"]
 
 [project.scripts]
-loom = "loom.cli:main"
+keel = "keel.cli:main"
 
-# 刻意**不写** Homepage：本仓库没有 git 远端，写一个 GitHub 地址等于
-# 声明一个不存在的东西。等真的有远端了再加。（见 README「不宣称做不到的事」）
+# 此前这里刻意**不写** Homepage，理由是「本仓库没有 git 远端，写一个 GitHub
+# 地址等于声明一个不存在的东西」。那条理由在 2026-09-19 建仓之后就不成立了 ——
+# **留着一条过期的理由，比没有理由更坏**：它会让人以为「不写 Homepage」是
+# 一个仍然有效的决定，从而没人去补它。现在远端确实存在，写上就是陈述事实。
+[project.urls]
+Homepage = "https://github.com/abdielchou-rgb/keel"
+Repository = "https://github.com/abdielchou-rgb/keel"
+Issues = "https://github.com/abdielchou-rgb/keel/issues"
 
 # 用 find 而不是手抄 packages 列表 —— 手抄一定会漂：
 # 新增一个子包时忘了同步，它会**静默**从发行包里消失，
 # 本地 import 全绿、装出去就缺模块。宁可让 setuptools 自己数。
 [tool.setuptools.packages.find]
-include = ["loom*"]
+include = ["keel*"]
 
 [tool.setuptools.package-data]
-loom = ["py.typed"]
+keel = ["py.typed"]

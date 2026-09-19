@@ -1,4 +1,4 @@
-"""显式状态转移语义校验器（`loom/validators/transitions.py`）单元测试。
+"""显式状态转移语义校验器（`keel/validators/transitions.py`）单元测试。
 
 RED-first：先写会失败的断言，再让实现通过；最后用变异测试证明
 「禁忌态复现检查」是真正在工作的（翻成永不触发，反例必须变红）。
@@ -21,16 +21,16 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import ArcShape, Focalization, Frequency, Medium, SceneOutcome, Severity  # noqa: E402
-from loom.ir.models import (  # noqa: E402
+from keel.ir.enums import ArcShape, Focalization, Frequency, Medium, SceneOutcome, Severity  # noqa: E402
+from keel.ir.models import (  # noqa: E402
     CommitmentLayer,
     NarrativeIR,
     SceneNode,
     StateDelta,
     TimePoint,
 )
-from loom.validators import transitions
-from loom.validators.transitions import *  # noqa: F401,F403  （含 state_transition_integrity）
+from keel.validators import transitions
+from keel.validators.transitions import *  # noqa: F401,F403  （含 state_transition_integrity）
 
 
 # ---------------------------------------------------------------------------

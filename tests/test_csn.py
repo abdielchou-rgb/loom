@@ -68,7 +68,7 @@ class T:
 
 
 def test_normalize(t: T) -> None:
-    from loom.audit.csn import normalize_cn_number as N
+    from keel.audit.csn import normalize_cn_number as N
 
     t.group("1. 中文数词归一化")
     cases: list[tuple[str, int | None]] = [
@@ -115,7 +115,7 @@ def test_normalize(t: T) -> None:
 
 
 def test_scan(t: T) -> None:
-    from loom.audit.csn import scan_numeric_facts
+    from keel.audit.csn import scan_numeric_facts
 
     t.group("2. 数值事实抽取（该抽出来的）")
     names = {"陈默", "沈砚"}
@@ -222,7 +222,7 @@ def test_scan(t: T) -> None:
 
 
 def test_conflicts(t: T) -> None:
-    from loom.audit.csn import find_conflicts, scan_numeric_facts
+    from keel.audit.csn import find_conflicts, scan_numeric_facts
 
     t.group("4. 跨场冲突检测")
     names = {"陈默", "沈砚"}

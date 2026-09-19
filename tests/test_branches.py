@@ -8,9 +8,9 @@ RED-first 纪律：
 
 import unittest
 
-from loom.ir.enums import ArcShape, Medium, Severity
-from loom.ir.models import CommitmentLayer, NarrativeIR
-from loom.validators.branches import (
+from keel.ir.enums import ArcShape, Medium, Severity
+from keel.ir.models import CommitmentLayer, NarrativeIR
+from keel.validators.branches import (
     Branch,
     attach_branches,
     branch_consistency,

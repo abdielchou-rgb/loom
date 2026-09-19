@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from loom.ir.enums import (
+from keel.ir.enums import (
     ActantRole,
     ArcShape,
     ChunkOrigin,
@@ -23,7 +23,7 @@ from loom.ir.enums import (
     Medium,
     SceneOutcome,
 )
-from loom.ir.models import (
+from keel.ir.models import (
     ActantBinding,
     CausalLink,
     Character,

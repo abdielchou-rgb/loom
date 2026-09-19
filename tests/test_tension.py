@@ -77,7 +77,7 @@ class T:
 _IDEA = "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字"
 
 #: 严重度序（与 scripts/verify.py 同口径）。避免在断言里到处写字符串比较。
-from loom.ir.enums import Severity  # noqa: E402
+from keel.ir.enums import Severity  # noqa: E402
 
 SEV = {Severity.INFO: 0, Severity.WARN: 1, Severity.ERROR: 2}
 
@@ -89,11 +89,11 @@ def _pipeline_ir(scene_count: int = 6, words: int = 200):
     （溯源改人工、补关系、清提案），用它测播种器会掩盖播种行为本身。
     本文件要看的正是「流水线自己产出了什么」。
     """
-    from loom.ir.enums import ArcShape, Medium
-    from loom.llm import MockGenerator
-    from loom.pipeline import LoomPipeline
+    from keel.ir.enums import ArcShape, Medium
+    from keel.llm import MockGenerator
+    from keel.pipeline import KeelPipeline
 
-    return LoomPipeline(MockGenerator()).run(
+    return KeelPipeline(MockGenerator()).run(
         _IDEA,
         medium=Medium.NOVEL,
         arc_shape=ArcShape.MAN_IN_A_HOLE,
@@ -105,8 +105,8 @@ def _pipeline_ir(scene_count: int = 6, words: int = 200):
 
 def _bare_ir(**kw):
     """最小可用的 IR，用来测播种器的边界（缺字段时不该炸）。"""
-    from loom.ir.enums import ArcShape
-    from loom.ir.models import Character, CharacterLayer, CommitmentLayer, NarrativeIR
+    from keel.ir.enums import ArcShape
+    from keel.ir.models import Character, CharacterLayer, CommitmentLayer, NarrativeIR
 
     chars = CharacterLayer()
     for cid in kw.pop("characters", []):
@@ -138,7 +138,7 @@ def _bare_ir(**kw):
 
 
 def test_seed_truth_from_lie(t: T) -> None:
-    from loom.pipeline.engines import TensionSeeder
+    from keel.pipeline.engines import TensionSeeder
 
     t.group("1. 真值层从 lie 反推")
 
@@ -173,9 +173,9 @@ def test_seed_truth_from_lie(t: T) -> None:
 
 
 def test_seeded_beliefs_are_self_consistent(t: T) -> None:
-    from loom.ir.enums import Severity
-    from loom.pipeline.engines import TensionSeeder
-    from loom.validators import run_all
+    from keel.ir.enums import Severity
+    from keel.pipeline.engines import TensionSeeder
+    from keel.validators import run_all
 
     t.group("2. 播种出来的信念与真值层自洽")
 
@@ -231,7 +231,7 @@ def test_seeded_beliefs_are_self_consistent(t: T) -> None:
 
 
 def test_seed_active_goals(t: T) -> None:
-    from loom.pipeline.engines import TensionSeeder
+    from keel.pipeline.engines import TensionSeeder
 
     t.group("3. active_goals 从显性目标与 want 取")
 
@@ -265,7 +265,7 @@ def test_seed_active_goals(t: T) -> None:
 
 
 def test_capability_boundary(t: T) -> None:
-    from loom.pipeline.engines import TensionSeeder
+    from keel.pipeline.engines import TensionSeeder
 
     t.group("4. 能力边界：不播种秘密 / 不播种递归信念")
 
@@ -298,7 +298,7 @@ def test_capability_boundary(t: T) -> None:
 
 
 def test_end_to_end_points(t: T) -> None:
-    from loom.ir.tom import TensionPoint
+    from keel.ir.tom import TensionPoint
 
     t.group("5. 端到端张力点")
 
@@ -325,7 +325,7 @@ def test_end_to_end_points(t: T) -> None:
     )
 
     # schema 硬约束：没有建议的张力点构造不出来。
-    from loom.ir.tom import TensionType
+    from keel.ir.tom import TensionType
 
     def _no_suggestion():
         TensionPoint(
@@ -349,7 +349,7 @@ def test_end_to_end_points(t: T) -> None:
 
 
 def test_idempotent_and_capped(t: T) -> None:
-    from loom.pipeline.engines import TensionSeeder
+    from keel.pipeline.engines import TensionSeeder
 
     t.group("6. 幂等与上限")
 
@@ -374,7 +374,7 @@ def test_idempotent_and_capped(t: T) -> None:
 
 
 def test_advisory_channel(t: T) -> None:
-    from loom.validators import ADVISORY, run_all
+    from keel.validators import ADVISORY, run_all
 
     t.group("7. 向前看的产出走 advisory，不动健康分")
 
@@ -400,7 +400,7 @@ def test_advisory_channel(t: T) -> None:
 
 
 def test_mutation_lie_cleared(t: T) -> None:
-    from loom.pipeline.engines import TensionSeeder
+    from keel.pipeline.engines import TensionSeeder
 
     t.group("8. 变异测试：清空 lie → 反讽消失")
 

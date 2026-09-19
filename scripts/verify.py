@@ -1,4 +1,4 @@
-"""Loom 自证工具 —— 零依赖，不需要 pytest，不需要 API key。
+"""Keel 自证工具 —— 零依赖，不需要 pytest，不需要 API key。
 
 跑法：
     .venv/Scripts/python.exe scripts/verify.py
@@ -56,8 +56,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from loom.ir.enums import Medium, Severity  # noqa: E402
-from loom.validators import (  # noqa: E402
+from keel.ir.enums import Medium, Severity  # noqa: E402
+from keel.validators import (  # noqa: E402
     ADVISORY,
     ADVISORY_DEFECT,
     ADVISORY_READOUT,
@@ -291,11 +291,11 @@ def check_prompts(c: Checker) -> None:
     出现未填充的占位符。
     """
     head("3.", "提示词字段完整性")
-    from loom.audience import AudienceSimulator
-    from loom.ir.enums import Medium
-    from loom.llm import MockGenerator
-    from loom.llm.base import REGISTRY as PROMPT_REGISTRY
-    from loom.pipeline import LoomPipeline
+    from keel.audience import AudienceSimulator
+    from keel.ir.enums import Medium
+    from keel.llm import MockGenerator
+    from keel.llm.base import REGISTRY as PROMPT_REGISTRY
+    from keel.pipeline import KeelPipeline
 
     # 遍历**全部**媒介，而不是只跑小说。
     # 只跑小说，正是「选了剧本却产出小说」这一类缺陷能长期存活的原因：
@@ -328,7 +328,7 @@ def check_prompts(c: Checker) -> None:
 
     gen = _RenderingGenerator(MockGenerator())
     for medium in Medium:
-        ir = LoomPipeline(gen).run(
+        ir = KeelPipeline(gen).run(
             "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字",
             medium=medium,
             scene_count=3,
@@ -398,8 +398,8 @@ def check_medium_shape(c: Checker) -> None:
     （形态规格的唯一定义）+ 桩件按媒介产出。
     """
     head("3b.", "媒介形态（正文是不是它该是的那个东西）")
-    from loom.llm import MockGenerator
-    from loom.pipeline import LoomPipeline
+    from keel.llm import MockGenerator
+    from keel.pipeline import KeelPipeline
 
     gen = MockGenerator()
     bad: list[str] = []
@@ -409,7 +409,7 @@ def check_medium_shape(c: Checker) -> None:
         if not marks:
             continue
         checked += 1
-        ir = LoomPipeline(gen).run(
+        ir = KeelPipeline(gen).run(
             "一个替人收尸的刀客，发现自己要收的那具尸体是自己十年前的名字",
             medium=medium,
             scene_count=2,
@@ -466,26 +466,26 @@ def _as_int(token: str) -> int | None:
     """阿拉伯数字或中文数词 → int。中文数词复用 CSN 的归一化（单一实现，不重写一遍）。"""
     if token.isdigit():
         return int(token)
-    from loom.audit.csn import normalize_cn_number
+    from keel.audit.csn import normalize_cn_number
 
     return normalize_cn_number(token)
 
 
 def _renderer_count() -> int:
-    """渲染器数从 `loom/render/__init__.py` 的导出面派生。"""
-    from loom import render
+    """渲染器数从 `keel/render/__init__.py` 的导出面派生。"""
+    from keel import render
 
     return len(render.__all__)
 
 
 def _prompt_count() -> int:
-    from loom.llm.base import REGISTRY as PROMPT_REGISTRY
+    from keel.llm.base import REGISTRY as PROMPT_REGISTRY
 
     return len(PROMPT_REGISTRY.all())
 
 
 def _template_count() -> int:
-    from loom.ir.templates import list_templates
+    from keel.ir.templates import list_templates
 
     return len(list_templates())
 
@@ -501,7 +501,7 @@ def _pipeline_engine_count() -> int:
     """
     import ast
 
-    src = (ROOT / "loom" / "pipeline" / "engines.py").read_text(encoding="utf-8")
+    src = (ROOT / "keel" / "pipeline" / "engines.py").read_text(encoding="utf-8")
     tree = ast.parse(src)
     return sum(
         1
@@ -522,7 +522,7 @@ def check_doc_counts(c: Checker) -> None:
         "个报表项": (stats["reports"], RE_REPORTS, "registry_stats()['reports']"),
         "个引擎": (_pipeline_engine_count(), RE_ENGINES, "engines.py 里有 run() 的顶层类数"),
         "个反例变异": (len(MUTATIONS), RE_MUTATIONS, "fixtures.MUTATIONS 的长度"),
-        "个渲染器": (_renderer_count(), RE_RENDERERS, "loom.render.__all__ 的长度"),
+        "个渲染器": (_renderer_count(), RE_RENDERERS, "keel.render.__all__ 的长度"),
         "个版本化提示词": (_prompt_count(), RE_PROMPTS, "PromptRegistry.all() 的长度"),
         "个模板": (_template_count(), RE_TEMPLATES, "templates.list_templates() 的长度"),
     }
@@ -833,7 +833,7 @@ def check_packaging(c: Checker) -> None:
 
     两个真实漂移点：
 
-    1. **版本号**。`pyproject.toml` 里的 `version` 与 `loom.__version__`
+    1. **版本号**。`pyproject.toml` 里的 `version` 与 `keel.__version__`
        是两处手抄。发版时只改一处，装出去的包就会报一个错的版本 ——
        而这件事**没有任何测试会抓到**，因为本地 import 走的是源码。
     2. **子包覆盖**。若 `packages` 是手抄列表，新增子包忘了同步会
@@ -848,14 +848,14 @@ def check_packaging(c: Checker) -> None:
         return
     text = pp.read_text(encoding="utf-8")
 
-    import loom
+    import keel
 
     m = re.search(r'^version\s*=\s*"([^"]+)"', text, re.M)
     declared = m.group(1) if m else None
     c.check(
-        declared == loom.__version__,
-        f"版本号一致（pyproject {declared} == loom.__version__ {loom.__version__}）",
-        f"漂移：pyproject 声明 {declared}，代码里是 {loom.__version__}。"
+        declared == keel.__version__,
+        f"版本号一致（pyproject {declared} == keel.__version__ {keel.__version__}）",
+        f"漂移：pyproject 声明 {declared}，代码里是 {keel.__version__}。"
         f"装出去的包会报错版本，而本地测试抓不到。",
     )
 
@@ -868,7 +868,7 @@ def check_packaging(c: Checker) -> None:
     )
 
     actual = sorted(
-        d.name for d in (ROOT / "loom").iterdir()
+        d.name for d in (ROOT / "keel").iterdir()
         if d.is_dir() and (d / "__init__.py").exists()
     )
     # 刻意**不做**「无 include 规则就当通过」：那时前缀为空、`startswith("")`
@@ -879,9 +879,9 @@ def check_packaging(c: Checker) -> None:
         c.note("子包覆盖：跳过（packages 未用 find，无 include 规则可判；"
                "上一项已就此事报错）")
     else:
-        # 规则形如 loom*；匹配的目标是 loom.<子包名>，故按前缀判
+        # 规则形如 keel*；匹配的目标是 keel.<子包名>，故按前缀判
         prefix = include.group(1).strip().strip('"').rstrip("*")
-        missing = [s for s in actual if not f"loom.{s}".startswith(prefix)]
+        missing = [s for s in actual if not f"keel.{s}".startswith(prefix)]
         c.check(
             not missing,
             f"子包覆盖完整（{len(actual)} 个：{', '.join(actual)}）",
@@ -923,7 +923,7 @@ def _safe_run(fn, ir):
 def check_selfcheck(c: Checker) -> dict:
     """门禁可信度：用合成自检样本给每个门禁 code 算 precision / recall。
 
-    **这不是门禁。** 这里报的是「Loom 之前只报结构分 89、从不报 precision/recall」
+    **这不是门禁。** 这里报的是「Keel 之前只报结构分 89、从不报 precision/recall」
     缺失的那块可信度读数。外部证据（ConStory-Checker 等）表明自动一致性检查器
     约 ~68% 准确 —— 我们的门禁也该把自己的命中率摊开给人看。
 
@@ -935,7 +935,7 @@ def check_selfcheck(c: Checker) -> dict:
     scene_id / entity_id / evidence），**不计入 verify.py 的失败数**。
     """
     head("10.", "门禁可信度（校验器自检）")
-    from loom.validators.base import REPORTS, REQUIRES
+    from keel.validators.base import REPORTS, REQUIRES
     from tests.validator_selfcheck_sets import (
         NOT_FIRING,
         SELFCHECK as SELFCHECK_SETS,
@@ -947,7 +947,7 @@ def check_selfcheck(c: Checker) -> dict:
         "诚实声明：本节的 precision/recall 来自**合成/构造**自检样本，不是真实分布；\n"
         "    只用于**校验器之间的相对比较**，不构成绝对准确率。\n"
         "    外部证据（ConStory-Checker 等）显示自动一致性检查器约 ~68% 准确；\n"
-        "    Loom 此前只报「结构分 89」而从不报 precision/recall —— 这里补上可信度读数。\n"
+        "    Keel 此前只报「结构分 89」而从不报 precision/recall —— 这里补上可信度读数。\n"
         "    样本构造方式见 tests/validator_selfcheck_sets.py 的模块 docstring。"
     )
 
@@ -1055,12 +1055,12 @@ def check_selfcheck(c: Checker) -> dict:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(description="Loom 自证工具")
+    ap = argparse.ArgumentParser(description="Keel 自证工具")
     ap.add_argument("--json", help="把结果写入 JSON")
     args = ap.parse_args()
 
     print("═" * 64)
-    print("  Loom 自证 —— registry / 报表项 / 文档漂移 / 误报 / 净命中")
+    print("  Keel 自证 —— registry / 报表项 / 文档漂移 / 误报 / 净命中")
     print("═" * 64)
 
     c = Checker()
