@@ -14,6 +14,7 @@
     python -m loom.cli submit-check <ir.json>    投稿前合规自检（能不能投）
     python -m loom.cli process-report <ir.json> --out 过程.md   创作过程报告（申诉举证）
     python -m loom.cli templates
+    python -m loom.cli api handshake           插件契约：稳定 JSON（薄客户端用）
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ import inspect
 from pathlib import Path
 
 from . import __version__
+from . import api as loom_api
 from .clock import wall_iso
 from .audience import AudienceSimulator
 from .audience.cognitive import scan_ir as scan_cognitive_ir
@@ -35,6 +37,7 @@ from .audit.dress import scan_ir as scan_dress_ir
 from .audit.selfcheck import pre_submit_check
 from .audit.transportation import scan_ir as scan_transport_ir
 from .ir.enums import ArcShape, Medium
+from .ir.loading import IRLoadError, load_ir
 from .ir.models import NarrativeIR
 from .ir.templates import list_templates
 from .llm import ModelCallError, TokenLedger, build_generator
@@ -66,26 +69,29 @@ from .validators import REQUIRES, REPORTS
 
 
 def _load(path: str) -> NarrativeIR:
-    """读一份 IR。**唯一入口**，所以错误文案也只在这里写一遍。
+    """读一份 IR，把 `IRLoadError` 翻译成**说人话的** SystemExit。
+
+    读取本身只有一份实现（`loom/ir/loading.py`）；这里只负责**面向人**的表达。
+    面向插件的表达在 `loom/api.py`（结构化错误），两者故意不同：
 
     为什么不让它直接抛 `FileNotFoundError`：那条 traceback 对作者
     一点用都没有 —— 它说的是「Python 打不开文件」，而作者需要知道的
     是「那份 IR 不在这儿，先跑 loom write 生成一个」。
     **把 traceback 甩给用户，是把调试成本转嫁给不懂调试的人。**
     """
-    p = Path(path)
-    if not p.exists():
-        raise SystemExit(
-            f"\n  找不到 IR 文件：{p}\n"
-            f"  可能的原因：路径写错了，或还没有生成过。\n"
-            f"  先生成一个：loom write \"一句话想法\" --out out/\n"
-            f"  再来看它：  loom audit out/<目录>/ir.json\n"
-        )
     try:
-        return NarrativeIR.from_json(p.read_text(encoding="utf-8"))
-    except Exception as exc:  # 坏 IR 也要说人话（JSON 截断 / 版本不对 / 字段非法）
+        return load_ir(path)
+    except IRLoadError as exc:
+        if exc.kind == IRLoadError.MISSING:
+            raise SystemExit(
+                f"\n  找不到 IR 文件：{exc.path}\n"
+                f"  可能的原因：路径写错了，或还没有生成过。\n"
+                f"  先生成一个：loom write \"一句话想法\" --out out/\n"
+                f"  再来看它：  loom audit out/<目录>/ir.json\n"
+            ) from exc
+        # 坏 IR 也要说人话（JSON 截断 / 版本不对 / 字段非法）
         raise SystemExit(
-            f"\n  读不出这份 IR：{p}\n  原因：{exc}\n"
+            f"\n  读不出这份 IR：{exc.path}\n  原因：{exc.reason}\n"
             f"  若是旧版本生成的，用 loom write 重跑一份即可。\n"
         ) from exc
 
@@ -974,6 +980,76 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_api(args: argparse.Namespace) -> int:
+    """插件契约入口 —— 把引擎能力以**稳定的 JSON** 暴露给薄客户端。
+
+    为什么不让插件直接解析上面那些命令的人类可读输出：那是**写给眼睛的**，
+    随时可以被改得更好读（这是它的本职）。插件一旦依赖它，改文案就会
+    **静默**弄坏插件，而且没有任何测试会红 —— 因为插件不在 Python 测试里。
+
+    退出码（插件据此分支，比解析文案可靠）：
+
+        0 = 成功
+        1 = 用户侧错误（方法名 / 参数 / 文件问题）
+        2 = `--params` 不是合法 JSON
+        6 = **Loom 自己崩了**（bug）。与「稿子有缺陷」必须分开：
+            一个以 0 退出的崩溃，在脚本与 CI 里读起来和一次成功一模一样。
+            （0-5 已被 write/run 占用：3=在等人，4=答案格式，5=计划被拒。）
+    """
+    params: dict[str, object] = {}
+    for key, val in (
+        ("ir", args.ir),
+        ("format", args.format),
+        ("medium", args.medium),
+        ("by", args.by),
+        ("at", args.at),
+        ("out", args.out),
+    ):
+        if val is not None:
+            params[key] = val
+    # 布尔开关只在**为真**时才进参数表：默认值由 api.py 的方法签名决定，
+    # 这里再写一遍默认值就会有两份真相。
+    for key, val in (
+        ("all", args.all),
+        ("accept", args.accept),
+        ("no_save", args.no_save),
+        ("meta", args.meta),
+        ("chrono", args.chrono),
+        ("force_prose", args.force_prose),
+    ):
+        if val:
+            params[key] = True
+    if args.id:
+        params["ids"] = list(args.id)
+    if args.params:
+        try:
+            extra = json.loads(args.params)
+        except json.JSONDecodeError as exc:
+            print(f"\n  ✗ --params 不是合法 JSON：{exc}", file=sys.stderr)
+            return 2
+        if not isinstance(extra, dict):
+            print(
+                "\n  ✗ --params 必须是一个 JSON 对象，例如 "
+                '\'{"all": true}\'',
+                file=sys.stderr,
+            )
+            return 2
+        params.update(extra)
+
+    payload = loom_api.call(args.method, params)
+    print(
+        json.dumps(
+            payload,
+            ensure_ascii=False,
+            indent=None if args.compact else 2,
+            default=str,
+        )
+    )
+    if payload.get("ok"):
+        return 0
+    return 6 if loom_api.is_internal(payload) else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="loom", description="Loom 叙事编译器")
     # `--version` 必须挂在顶层：打包成 console script 之后，用户第一件事往往
@@ -1135,6 +1211,33 @@ def build_parser() -> argparse.ArgumentParser:
     bn.add_argument("ir")
     bn.add_argument("--out", help="输出 JSON 路径（默认 <ir 同目录>/bench.json）")
     bn.set_defaults(func=cmd_bench)
+
+    # 插件契约。**这是给程序用的入口，不是给眼睛用的** —— 参数表刻意做全，
+    # 免得薄客户端为了拿一个字段去解析人类可读输出（那就会静默漂移）。
+    ap = sub.add_parser(
+        "api", help="插件契约：以稳定 JSON 暴露引擎能力（VS Code / Obsidian 薄客户端用）"
+    )
+    ap.add_argument("method", help="方法名；先跑 `loom api handshake` 看全部签名")
+    ap.add_argument("--ir", help="IR 文件路径")
+    ap.add_argument("--format", help="渲染格式：text|fountain|storyboard|ink|renpy|outline|html")
+    ap.add_argument("--medium", help="templates：按媒介过滤")
+    ap.add_argument("--id", action="append", help="decide：提案 id（可重复）")
+    ap.add_argument("--all", action="store_true",
+                    help="decide：裁决全部待裁决；proposals：连已裁决的一起列")
+    ap.add_argument("--accept", action="store_true", default=False, help="decide：采纳")
+    ap.add_argument("--reject", dest="accept", action="store_false",
+                    help="decide：驳回（默认）")
+    ap.add_argument("--by", help="decide：裁决主体署名（默认 human）")
+    ap.add_argument("--at", help="decide：故事内时点标签（如「第 3 章」）")
+    ap.add_argument("--out", help="decide：写回目标（默认写回 --ir 原文件）")
+    ap.add_argument("--no-save", action="store_true",
+                    help="decide：跳过落盘（本次裁决**不会**被保留）")
+    ap.add_argument("--meta", action="store_true", help="render text：带元信息")
+    ap.add_argument("--chrono", action="store_true", help="render text：按时间顺序")
+    ap.add_argument("--force-prose", action="store_true", help="render text：强制正文")
+    ap.add_argument("--params", help="任意参数，JSON 对象（覆盖上面同名项）")
+    ap.add_argument("--compact", action="store_true", help="单行 JSON（管道用）")
+    ap.set_defaults(func=cmd_api)
 
     wb = sub.add_parser("web", help="启动本地网页界面（浏览器里操作 Loom，零依赖）")
     wb.add_argument("--host", default="127.0.0.1",
