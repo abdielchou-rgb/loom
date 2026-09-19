@@ -89,7 +89,8 @@ def main() -> int:
           f"  行动元 {len(ir.characters.actants)}"
           f"  目标对撞 {len(ir.characters.goal_collisions())} 处")
     print(f"  L3 承诺层    承诺 {len(ir.commitment.commitments)}"
-          f"  未兑现 {len(ir.commitment.unsatisfied())}")
+          f"  带落点 {sum(1 for c in ir.commitment.commitments if c.must_hold_at)}"
+          f"  已标记兑现 {len(ir.commitment.commitments) - len(ir.commitment.unsatisfied())}")
     print()
     print("场景骨架（Genette + McKee + Todorov）：")
     print(f"  {'id':<5}{'标题':<20}{'价值翻转':<10}{'结果':<10}{'情绪':>6}  聚焦者")

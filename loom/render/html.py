@@ -228,15 +228,28 @@ def render_html(ir: NarrativeIR, report=None, *, title: str | None = None) -> st
             )
     if com.commitments:
         parts.append("<h3>必须发生的事（作者承诺）</h3><table>"
-                     "<tr><th>类型</th><th>内容</th><th>状态</th></tr>")
+                     "<tr><th>类型</th><th>内容</th><th>落点</th><th>作者标记</th></tr>")
         for cm in com.commitments:
-            st = "已兑现" if cm.satisfied else "未兑现"
-            col = "var(--ok)" if cm.satisfied else "var(--warn)"
+            # 「是否真的兑现」**不可机判**（见 validators/structure.commitment_satisfied
+            # 的 docstring 与实测）。所以这里只报**两件可确证的事**：承诺挂在哪一场、
+            # 作者有没有标记它兑现。
+            # 曾经这里印「已兑现 / 未兑现」—— 那是把一个**声明式字段**说成了判定结果，
+            # 而实测该判定在中文上恒假（7/7 误报）。
+            anchors = "、".join(cm.must_hold_at or []) or "—"
+            st = "已标记兑现" if cm.satisfied else "未标记"
+            col = "var(--ok)" if cm.satisfied else "var(--dim)"
             parts.append(
                 f"<tr><td>{escape(str(cm.kind))}</td><td>{escape(cm.statement)}</td>"
+                f"<td>{escape(anchors)}</td>"
                 f"<td style='color:{col}'>{st}</td></tr>"
             )
         parts.append("</table>")
+        parts.append(
+            "<div class='dim' style='font-size:12px;margin-top:6px'>"
+            "注：「是否真的兑现」不可自动判定 —— 承诺是抽象主题句，正文是具体动作句，"
+            "两者措辞本就不重合。此表只报可确证的两件事：承诺的落点、作者自己的标记。"
+            "</div>"
+        )
     parts.append("</div>")
 
     # ── 5. 体检明细 ──

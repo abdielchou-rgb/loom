@@ -108,44 +108,39 @@ def state_delta(ir: NarrativeIR) -> list[Finding]:
     return out
 
 
-def _commitment_evident(c, scene_map: dict[str, Any]) -> bool:
-    """承诺在 must_hold_at 场景中是否有结构依据。
-
-    判据（可解释、不依赖 NLP）：承诺 statement 中的关键词
-    （≥2 字符、去标点、小写）若出现在场景的结构字段
-    （turning_point / goal / conflict / outcome / value / prose /
-    state_deltas 的字符串化表示）中，即视为有依据。
-    """
-    import re
-
-    # 提取 token：连续 ASCII 字母数字或 CJK 汉字（自动在标点/空格处断开）
-    words = {
-        w.lower()
-        for w in re.findall(r"[a-zA-Z0-9\u4e00-\u9fff]+", c.statement)
-        if len(w) >= 2
-    }
-    if not words:
-        return False
-    for sid in c.must_hold_at:
-        s = scene_map.get(sid)
-        if s is None:
-            continue
-        texts: list[str] = []
-        for attr in ("turning_point", "goal", "conflict", "outcome", "value", "prose"):
-            v = getattr(s, attr, None)
-            if v:
-                texts.append(str(v))
-        for d in s.state_deltas:
-            texts.append(f"{d.entity_id}.{d.attribute}: {d.before}→{d.after}")
-        joined = " ".join(texts).lower()
-        if any(w in joined for w in words):
-            return True
-    return False
-
-
 @register("commitment_satisfied")
 def commitment_satisfied(ir: NarrativeIR) -> list[Finding]:
-    """L3 作者承诺层：防「漂离论点」。Riedl & Young IPOCL 硬约束。"""
+    """L3 作者承诺层：承诺必须**有落点**。Riedl & Young IPOCL 硬约束。
+
+    ── 这个校验器能判什么、不能判什么（必读）──────────────────────
+
+    **能判**：承诺的 `must_hold_at` 是否指向真实存在的场景。
+    这是纯结构事实，二值、无歧义，且只有作者能修。
+
+    **不能判**：承诺的**主题内容**是否真的在正文里兑现了。
+
+    这里曾经用「statement 关键词是否出现在目标场景文本中」当代理，
+    实测证明该代理在中文上**恒假**：它按「连续 ASCII 字母数字 / CJK
+    汉字」切 token，而中文没有词边界，于是一整句被切成**一个** token
+    —— `「信任不是一种判断，而是一种交付。」` 切出的是
+    `["信任不是一种判断", "而是一种交付"]` 两个 6~8 字整句，
+    而正文永远不可能逐字复现整句。
+
+    实测（`scripts/pipeline_demo.py`，2026-09-19）：7 条承诺 7 条误报
+    「未兑现」，健康分从 92 塌到 21，错误 0 变成 6 —— 一个**对着正常
+    故事开火的假门禁**，比原先那个恒真的假门禁更糟。
+
+    退一步改用字符二元组（`drift._shingles` 的既有做法）同样不行：
+    实测重叠率只有 0.05~0.10，没有任何阈值能把「兑现了」与「没兑现」
+    分开。原因不是分词不好，而是**承诺措辞与场景措辞本来就是两套
+    独立生成的词表**（承诺是抽象主题句，场景是具体动作句）。
+
+    结论：**主题兑现不是可机判的**，故本校验器**不产出**这类判定 ——
+    铁律 24：证据不足时不判定，而不是判定为通过，更不是判定为失败。
+    L3 真正的可测执行力在 `drift.drift_guard`（用字符 shingle 测
+    「尾窗还在不在论点上」，那是可测的结构信号）；本校验器只负责
+    「承诺有没有落点」这个更弱、但**为真**的判据。
+    """
     out: list[Finding] = []
     scene_map = {s.id: s for s in ir.scenes}
     for c in ir.commitment.commitments:
@@ -158,17 +153,6 @@ def commitment_satisfied(ir: NarrativeIR) -> list[Finding]:
                     entity_id=c.id,
                     message=f"承诺指向的场景不存在：{missing}",
                     suggestion="补齐场景，或修正承诺的 must_hold_at",
-                )
-            )
-            continue
-        if not _commitment_evident(c, scene_map) and c.severity is Severity.ERROR:
-            out.append(
-                Finding(
-                    code="commitment_satisfied",
-                    severity=Severity.ERROR,
-                    entity_id=c.id,
-                    message=f"作者承诺未兑现（{c.kind}）：{c.statement}",
-                    suggestion="在对应场景中兑现该承诺，或降级为 WARN 并说明理由",
                     evidence={"must_hold_at": c.must_hold_at},
                 )
             )

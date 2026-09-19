@@ -141,23 +141,11 @@ def build_clean_ir(medium: Medium = Medium.NOVEL) -> NarrativeIR:
     #   生产路径上不存在这个问题 —— 那里没有人在体检之后改 IR。）
     ir.proposals = []
 
-    # 收尾 5（P0.5）：让承诺在基线上真正被兑现 —— 否则 commitment_satisfied
-    # 会从假门禁变成「对着正常故事也报警」。做法：把未兑现承诺的关键词
-    # 注入其 must_hold_at 场景的 goal，使 _commitment_evident 为真。
-    from loom.validators.structure import _commitment_evident
-
-    scene_map = {s.id: s for s in ir.scenes}
-    for c in ir.commitment.commitments:
-        if not _commitment_evident(c, scene_map):
-            for sid in c.must_hold_at:
-                s = scene_map.get(sid)
-                if s is None:
-                    continue
-                # 注入承诺 statement 的前 20 字到 goal，确保关键词命中
-                inject = c.statement[:20] if len(c.statement) <= 20 else c.statement[:20] + "…"
-                s.goal = (s.goal or "") + " " + inject
-                break  # 只注入第一场即可
-
+    # 注：「收尾 5」（向场景 goal 注入承诺关键词，好让词法门禁命中）已删除。
+    # 那是为了让一个**恒假**的检查在基线上变绿而往 fixture 里注入答案 ——
+    # 循环论证：测试测的是「我们注入的字符串还在不在」，不是「承诺兑现没有」。
+    # `commitment_satisfied` 现改为纯结构判据（承诺的 must_hold_at 必须指向
+    # 真实存在的场景），干净基线天然通过，无需任何注入。
     _CACHE[medium] = ir
     return ir
 
@@ -280,10 +268,16 @@ def _m_state_delta(ir: NarrativeIR) -> None:
 
 @mutation("commitment_satisfied", Severity.ERROR)
 def _m_commitment(ir: NarrativeIR) -> None:
-    """让一条硬承诺既未兑现、也无落点。"""
+    """把一条硬承诺的落点指向**不存在**的场景 —— 纯结构缺陷。
+
+    旧变异是「清空 must_hold_at + satisfied=False」，它依赖一个在中文上
+    恒假的词法判据。判据改成结构判据后，那个变异**不再触发**（落点为空
+    = 没有落点要检查，本身不是缺陷），所以必须换成打真正可判的那一面。
+    这条变异同时也是「判据确实在动」的证明：它红了，说明场景存在性
+    真的被检查了。
+    """
     c = ir.commitment.commitments[0]
-    c.satisfied = False
-    c.must_hold_at = []
+    c.must_hold_at = ["sc_does_not_exist"]
 
 
 @mutation("enigma_resolution", Severity.ERROR)

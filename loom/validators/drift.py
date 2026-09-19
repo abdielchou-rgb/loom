@@ -81,7 +81,6 @@ from __future__ import annotations
 from ..ir.enums import Severity
 from ..ir.models import NarrativeIR
 from .base import Finding, register
-from .structure import _commitment_evident
 
 __all__ = ["drift_guard"]
 
@@ -143,16 +142,27 @@ def _trailing_window(scenes: list) -> tuple[list, list]:
 
 
 def _thesis_grams(ir: NarrativeIR) -> set[str]:
-    """论点面 = 控制理念 + 尚**未兑现**的承诺。
+    """论点面 = 控制理念 + **尚未兑现**的承诺（按 IR 的 `satisfied` 标记）。
+
+    ── 为什么读标记，而不是现场判定 ──────────────────────────────
+
+    主题兑现**不可机判**。这里曾经调 `structure._commitment_evident` 做
+    词法匹配，而它在中文上恒假（它把整句中文切成**一个** token，
+    `「信任不是一种判断」`，正文不可能逐字复现），于是过滤器形同虚设、
+    实际行为一直是「全收」。
+
+    既然判不出来，就**不要假装在判**：改读 IR 自带的 `satisfied`
+    —— 声明式标记，由引擎 / 作者维护，`auto.py` 组装 `open_commitments`
+    提示词字段时用的是同一个字段。这样「哪条承诺还算数」是**被声明的**，
+    而不是被一个坏的正则猜出来的。
 
     只收未兑现的：已兑现的承诺不再需要推进，把它们的措辞算进论点面，
     会让一个已经写完的故事因为「尾窗没再提那句已经兑现的话」而报警 ——
     那种报警只会逼作者往结尾里塞口号。
     """
     grams = _shingles(ir.commitment.controlling_idea or "")
-    scene_map = {s.id: s for s in ir.scenes}
     for c in ir.commitment.commitments:
-        if not _commitment_evident(c, scene_map):
+        if not c.satisfied:
             grams |= _shingles(c.statement or "")
     return grams
 
@@ -185,11 +195,13 @@ def drift_guard(ir: NarrativeIR) -> list[Finding]:
             early_hits = len(thesis & early_grams)
             win_hits = len(thesis & win_grams)
             if early_hits > 0 and win_hits == 0:
-                scene_map = {s.id: s for s in ir.scenes}
+                # 用 IR 自带的 `satisfied` 标记（引擎 / 作者维护），不再用
+                # 词法猜测 —— 主题兑现不可机判，见
+                # `structure.commitment_satisfied` 的 docstring。
                 open_c = [
                     c.statement
                     for c in ir.commitment.commitments
-                    if not _commitment_evident(c, scene_map)
+                    if not c.satisfied
                 ]
                 out.append(
                     Finding(

@@ -15,10 +15,14 @@
 所以「等用户喊停」不是停止条件，是侥幸。本模块的停止判据全部从 IR 派生：
 
   1. `target_scenes` 达标
-  2. 全部承诺已兑现（`commitments` 全部 `satisfied`）
-  3. 结局锚点兑现（最后一场的结构字段与 `ending_anchor` 有字面重叠）
-  4. 预算闸（场数 / token / 成本 / 时长）—— 没有它，「不喊停」就是失控
-  5. **暂停**（不是停止）：结构类校验失败 / 漂移检测报警
+  2. 结局锚点兑现（最后一场的结构字段与 `ending_anchor` 有字面重叠）
+  3. 预算闸（场数 / token / 成本 / 时长）—— 没有它，「不喊停」就是失控
+  4. **暂停**（不是停止）：结构类校验失败 / 漂移检测报警
+
+> **曾有的第 2 条「全部承诺已兑现」已删除。** 理由见 `_commitments_done`
+> 旧址（约第 385 行）的说明：承诺的 `satisfied` 是个**声明式**字段，
+> 引擎不该猜它；而按 `must_hold_at` 派生停止条件在增量路径上恒真。
+> 删掉一个恒真或恒假的判据，不是少了个功能，是少了个假功能。
 
 第 5 条对应已定的自主度 **B**：机器自动出场景卡 + 正文，**每个结构决策留痕为
 提案**，结构类校验失败**暂停等人**，绝不静默自动改结构（那会毁掉作者意图）。
@@ -71,7 +75,6 @@ from ..clock import wall_iso
 from ..llm.prompts import PROSE
 from ..validators.base import Finding, Report, run_all
 from ..validators.drift import drift_guard
-from ..validators.structure import _commitment_evident
 from .budget import Budget, BudgetExceeded, Usage, check, render as render_budget
 from .checkpoint import RunState, save as save_checkpoint, resume as resume_checkpoint
 from .engines import Scripter
@@ -81,8 +84,10 @@ from .preflight import PreflightError, preflight
 
 #: 停止原因。**显式枚举，不要散成字符串** —— 停止原因是给人看的诊断，
 #: 「为什么它停了」必须是可回答的问题，否则自动驾驶在用户眼里就是随机的。
+#:
+#: 注：曾有 `STOP_COMMITMENTS = "commitments_satisfied"`，已删除 ——
+#: 它在增量路径上恒真。理由见 `_commitments_done` 旧址。
 STOP_TARGET = "target_reached"
-STOP_COMMITMENTS = "commitments_satisfied"
 STOP_ANCHOR = "ending_anchor_reached"
 STOP_BUDGET = "budget_exceeded"
 STOP_PAUSED_STRUCTURAL = "paused_structural"
@@ -354,15 +359,34 @@ class AutoWriter:
         )
         return bool(_shingles(anchor) & _shingles(tail))
 
-    def _refresh_commitments(self, ir: NarrativeIR) -> None:
-        """根据当前场景正文重新评估每条承诺的兑现状态（P0.5 修假门禁）。"""
-        scene_map = {s.id: s for s in ir.scenes}
-        for c in ir.commitment.commitments:
-            c.satisfied = _commitment_evident(c, scene_map)
-
-    def _commitments_done(self, ir: NarrativeIR) -> bool:
-        cs = ir.commitment.commitments
-        return bool(cs) and all(c.satisfied for c in cs)
+    # ── 已删除：`_refresh_commitments` 与 `_commitments_done` ──────────
+    #
+    # 这两个方法一起构成曾经的停止判据 #2「全部承诺已兑现」。它们被删掉，
+    # 不是因为它跑不通，而是因为**它不可能跑对**。两条独立理由：
+    #
+    # **理由一：`satisfied` 是声明式字段，引擎不该猜它。**
+    #   曾经这里调 `_commitment_evident` 做词法匹配来「算」兑现与否。
+    #   实测证明那个判据在中文上**恒假**：它把整句中文切成**一个** token
+    #   （`「信任不是一种判断」`），而正文永远不可能逐字复现整句。
+    #   后果是 `commitment_satisfied` 对着正常故事开火（7/7 误报，
+    #   `scripts/pipeline_demo.py` 健康分 92 → 21）。
+    #   `satisfied` 现在只由**声明**驱动（默认 False），引擎不再代劳。
+    #
+    # **理由二：按 `must_hold_at` 派生的停止条件在增量路径上恒真。**
+    #   `_bind_commitments` 按「第几场 / 共几场」的**比例**铺锚点，而
+    #   `AutoWriter` 在第一场刚建好时就来绑 —— 此时场景列表长度为 1，
+    #   于是**全部 7 条承诺都落到 `sc1`**。实测：写满第 1 场后
+    #   「全部承诺已兑现」立刻为真，整条自动运行在第 1 场就停了。
+    #   若改成按计划跨度铺开，则最后一条承诺的锚点落在计划末场，
+    #   停止时刻与 `target_scenes` **完全重合** —— 那是个冗余判据，
+    #   不是独立判据。
+    #
+    # 恒真的判据与恒假的判据一样没用，而冗余判据会让人以为有两个
+    # 独立的收敛信号。删掉它，收敛信号诚实地只剩三个（场数 / 锚点 / 预算）。
+    #
+    # 保留下来的东西：`CommitmentLayer.satisfied` 仍在（声明式），
+    # 仍被 `validators/drift.py` 的论点面与 `pipeline/preflight.py`
+    # 消费；只是**没有任何引擎再替作者填它**。
 
     # -- 主循环 ----------------------------------------------------------
 
@@ -519,8 +543,8 @@ class AutoWriter:
                     memory.commit(s)
             ir.memory_json = memory.to_json()
 
-            # 重新评估承诺兑现状态（P0.5：从假门禁改为可解释匹配）
-            self._refresh_commitments(ir)
+            # 承诺的 `satisfied` 不再由引擎代填 —— 它是声明式字段，
+            # 「主题兑现了没有」不可机判。见 `_refresh_commitments` 旧址。
 
             # -- 体检 --
             report = run_all(ir)
@@ -555,14 +579,12 @@ class AutoWriter:
                 break
 
             # -- 停止判据（从 IR 派生）--
+            # 只剩两个「提前收敛」信号 + 预算闸。曾经的「全部承诺已兑现」
+            # 已删：它在增量路径上恒真（全部锚点落到 sc1），详见旧址说明。
             n = len(ir.scenes)
             if n >= cfg.target_scenes:
                 stop = STOP_TARGET
                 self._step(f"达到目标场数 {cfg.target_scenes}，停止")
-                break
-            if self._commitments_done(ir):
-                stop = STOP_COMMITMENTS
-                self._step("全部承诺已兑现，停止")
                 break
             if self._anchor_reached(ir):
                 stop = STOP_ANCHOR

@@ -287,6 +287,18 @@ class Commitment(LoomModel):
         default_factory=list, description="必须为真的场景 id 列表"
     )
     severity: Severity = Severity.ERROR
+    #: 「这条承诺已经兑现」—— **声明式字段**，不是引擎算出来的判定。
+    #:
+    #: 为什么必须声明而不是计算：「主题真的兑现了没有」**不可机判**。
+    #: 曾经引擎拿承诺措辞去正文里做词法匹配，实测在中文上恒假
+    #: （中文无词边界，整句被切成一个 token，正文不可能逐字复现），
+    #: 后果是对着正常故事 7/7 误报。判据已删除，见
+    #: `validators/structure.commitment_satisfied` 的 docstring。
+    #:
+    #: 消费方（都是**读**，不写）：
+    #:   * `validators/drift.py` —— 未标记兑现的承诺进入论点面
+    #:   * `pipeline/preflight.py` —— 检查未标记兑现的承诺有没有落点
+    #:   * `render/html.py` —— 报告里原样呈现「作者标记」
     satisfied: bool = False
 
 
@@ -303,6 +315,11 @@ class CommitmentLayer(LoomModel):
         return c
 
     def unsatisfied(self) -> list[Commitment]:
+        """**未被标记**为已兑现的承诺（不是「已证明未兑现」）。
+
+        措辞要紧：`satisfied` 是声明式字段，为 False 只说明**没人声明它兑现**，
+        不说明它没兑现 —— 后者不可机判。返回的是「还挂着义务的承诺」。
+        """
         return [c for c in self.commitments if not c.satisfied]
 
 

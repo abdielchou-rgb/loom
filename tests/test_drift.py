@@ -224,14 +224,9 @@ def test_open_commitment_is_thesis(t: T) -> None:
     # 同一份 IR，只是把承诺标成已兑现：它就**退出**论点面，
     # 于是论点面只剩从未出现的控制理念 → 前段命中 0 → 不可判（返回 []）。
     ir_done = _ir(scenes, open_commitments=(f"{_WANDER[2]}与{_WANDER[3]}",))
+    # 「已兑现」由 IR 的 `satisfied` 标记**声明**，不再由词法现场判定 ——
+    # 主题兑现不可机判（见 structure.commitment_satisfied 的 docstring）。
     ir_done.commitment.commitments[0].satisfied = True
-    # P0.5 修假门禁后，兑现判定改为结构字段匹配；
-    # 把承诺 statement 完整注入其 must_hold_at 场景的 turning_point，
-    # 使 _commitment_evident 为真，从而退出论点面。
-    ir_done.commitment.commitments[0].must_hold_at = ["s1"]
-    ir_done.scenes[0].turning_point = (
-        ir_done.scenes[0].turning_point + " " + ir_done.commitment.commitments[0].statement
-    )
     t.eq(drift_guard(ir_done), [], "已兑现的承诺退出论点面（不再需要推进）")
 
 
